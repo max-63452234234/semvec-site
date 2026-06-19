@@ -6,6 +6,16 @@
 <meta name="robots" content="noindex">
 <title>Keep your AI data in the EU, Semvec</title>
 <meta name="description" content="In-process, no telemetry, GDPR-ready memory built in Munich.">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Semvec">
+<meta property="og:title" content="Keep your AI data in the EU, Semvec">
+<meta property="og:description" content="In-process, no telemetry, GDPR-ready memory built in Munich.">
+<meta property="og:image" content="og-bild.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Keep your AI data in the EU, Semvec">
+<meta name="twitter:description" content="In-process, no telemetry, GDPR-ready memory built in Munich.">
+<meta name="twitter:image" content="og-bild.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -193,6 +203,12 @@ h3{font-weight:600;letter-spacing:-.01em}
 .btn-ghost:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55);transform:translateY(-2px)}
 .nav{background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px)}
 .brand{font-weight:800}.brand .mark{box-shadow:0 4px 16px rgba(26,79,138,.5)}
+.brand .logo-img{width:30px;height:30px;border-radius:8px;object-fit:cover;box-shadow:0 4px 16px rgba(26,79,138,.5)}
+.nav-cta{padding:9px 19px;font-size:.9rem;box-shadow:0 6px 16px rgba(26,79,138,.28)}
+.nav-right{gap:10px}
+.lang{padding:3px}.lang a,.lang span{padding:6px 12px;font-size:.78rem}
+.nav-demo.btn-outline{background:linear-gradient(135deg,#f58025,#e2551a);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(245,128,37,.34)}.nav-demo.btn-outline:hover{background:linear-gradient(135deg,#e2551a,#c75b2e);border-color:transparent;color:#fff;transform:translateY(-2px)}
+@media(max-width:980px){.nav-demo{display:none}}
 .hero,.subhero,.cta-band,.section.dark{position:relative;background:#080f20;color:#fff;overflow:hidden;isolation:isolate}
 .hero::before,.subhero::before,.cta-band::before,.section.dark::before{content:"";position:absolute;inset:-10%;z-index:-2;background:radial-gradient(700px 480px at 12% 0%,rgba(47,116,192,.5),transparent 60%),radial-gradient(680px 560px at 92% 8%,rgba(86,180,232,.28),transparent 55%),radial-gradient(640px 520px at 72% 118%,rgba(245,128,37,.18),transparent 62%);animation:semvecDrift 22s ease-in-out infinite alternate;will-change:transform}
 .hero::after,.subhero::after,.cta-band::after,.section.dark::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.6;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")}
@@ -418,7 +434,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 </head>
 <body>
 <div data-langroot="en" style="display:none"><header class="nav"><div class="wrap nav-inner">
-<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<a class="brand" href="index.html"><img class="logo-img" src="logo.png" alt="Semvec" width="30" height="30">Semvec</a>
 <nav class="nav-links">
 <a href="index.html#capabilities">Capabilities</a>
 <a href="index.html#usecases">Use cases</a>
@@ -426,7 +442,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="index.html#pricing">Pricing</a>
 <a href="index.html#faq">FAQ</a>
 </nav>
-<div class="nav-right"><span class="lang"><span class="on">EN</span><a onclick="semvecSetLang('de')">DE</a></span><a class="btn btn-primary nav-cta" href="#contact">Contact</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="nav-right"><span class="lang"><span class="on">EN</span><a onclick="semvecSetLang('de')">DE</a></span><a class="btn btn-outline nav-cta nav-demo" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live demo</a><a class="btn btn-primary nav-cta" href="#contact">Contact</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 </div></header><div class="wrap crumb"><a href="index.html">Home</a><span class="sep">›</span><a href="index.html#industries">Solutions</a><span class="sep">›</span>“Our data isn’t allowed to leave the EU”</div><section class="subhero"><div class="wrap"><div class="subhero-grid">
 <div><span class="uc-tag fade d1">Challenge</span><h1 class="fade d1" style="margin-top:6px">“Our data isn’t allowed to leave the EU”</h1>
 <p class="lead fade d2">Most memory layers route every message through external AI services. Semvec runs entirely inside your own systems, nothing is sent out, and you can prove it.</p>
@@ -464,6 +480,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <p>Free Community tier. No registration. Wheels for Linux, macOS and Windows.</p>
 <div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
 <a class="btn btn-light" href="#contact">Talk to us</a>
+<a class="btn btn-light" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live demo &#8594;</a>
 <a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Read the docs</a></div>
 </div></section><footer class="footer"><div class="wrap">
 <div class="foot-grid">
@@ -482,12 +499,13 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="challenge-cut-costs.html">Cut memory costs</a>
 <a href="challenge-auditable-agents.html">Auditable agents</a>
 <a href="challenge-eu-data.html">Keep data in the EU</a>
+<a href="https://demo.semvec.io/" target="_blank" rel="noopener">Live demo</a>
 <a href="https://www.semvec.io/">Documentation</a></div>
 </div>
 <div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
 </div></footer></div>
 <div data-langroot="de" style="display:none"><header class="nav"><div class="wrap nav-inner">
-<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<a class="brand" href="index.html"><img class="logo-img" src="logo.png" alt="Semvec" width="30" height="30">Semvec</a>
 <nav class="nav-links">
 <a href="index.html#capabilities">Funktionen</a>
 <a href="index.html#usecases">Anwendungsfälle</a>
@@ -495,7 +513,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="index.html#pricing">Preise</a>
 <a href="index.html#faq">FAQ</a>
 </nav>
-<div class="nav-right"><span class="lang"><a onclick="semvecSetLang('en')">EN</a><span class="on">DE</span></span><a class="btn btn-primary nav-cta" href="#contact">Kontakt</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="nav-right"><span class="lang"><a onclick="semvecSetLang('en')">EN</a><span class="on">DE</span></span><a class="btn btn-outline nav-cta nav-demo" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo</a><a class="btn btn-primary nav-cta" href="#contact">Kontakt</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 </div></header><div class="wrap crumb"><a href="index.html">Start</a><span class="sep">›</span><a href="index.html#industries">Lösungen</a><span class="sep">›</span>„Unsere Daten dürfen die EU nicht verlassen“</div><section class="subhero"><div class="wrap"><div class="subhero-grid">
 <div><span class="uc-tag fade d1">Herausforderung</span><h1 class="fade d1" style="margin-top:6px">„Unsere Daten dürfen die EU nicht verlassen“</h1>
 <p class="lead fade d2">Die meisten Memory-Layer schicken jede Nachricht durch externe KI-Dienste. Semvec läuft vollständig in Ihren eigenen Systemen, nichts wird nach außen gesendet, und Sie können es belegen.</p>
@@ -533,6 +551,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <p>Kostenlose Community-Stufe. Keine Registrierung. Wheels für Linux, macOS und Windows.</p>
 <div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
 <a class="btn btn-light" href="#contact">Mit uns sprechen</a>
+<a class="btn btn-light" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo &#8594;</a>
 <a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Dokumentation lesen</a></div>
 </div></section><footer class="footer"><div class="wrap">
 <div class="foot-grid">
@@ -551,6 +570,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="challenge-cut-costs.html">Speicherkosten senken</a>
 <a href="challenge-auditable-agents.html">Prüfbare Agenten</a>
 <a href="challenge-eu-data.html">Daten in der EU</a>
+<a href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo</a>
 <a href="https://www.semvec.io/">Dokumentation</a></div>
 </div>
 <div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>

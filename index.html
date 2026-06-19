@@ -6,6 +6,16 @@
 <meta name="robots" content="noindex">
 <title>Semvec, Constant-cost memory for LLM agents | mem0 & Letta alternative</title>
 <meta name="description" content="Give your AI a memory without the runaway bill: ~93% fewer tokens, flat O(1) cost per turn, runs on your own servers, GDPR-ready. pip install semvec.">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Semvec">
+<meta property="og:title" content="Semvec, Constant-cost memory for LLM agents | mem0 & Letta alternative">
+<meta property="og:description" content="Give your AI a memory without the runaway bill: ~93% fewer tokens, flat O(1) cost per turn, runs on your own servers, GDPR-ready. pip install semvec.">
+<meta property="og:image" content="og-bild.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Semvec, Constant-cost memory for LLM agents | mem0 & Letta alternative">
+<meta name="twitter:description" content="Give your AI a memory without the runaway bill: ~93% fewer tokens, flat O(1) cost per turn, runs on your own servers, GDPR-ready. pip install semvec.">
+<meta name="twitter:image" content="og-bild.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -193,6 +203,12 @@ h3{font-weight:600;letter-spacing:-.01em}
 .btn-ghost:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55);transform:translateY(-2px)}
 .nav{background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px)}
 .brand{font-weight:800}.brand .mark{box-shadow:0 4px 16px rgba(26,79,138,.5)}
+.brand .logo-img{width:30px;height:30px;border-radius:8px;object-fit:cover;box-shadow:0 4px 16px rgba(26,79,138,.5)}
+.nav-cta{padding:9px 19px;font-size:.9rem;box-shadow:0 6px 16px rgba(26,79,138,.28)}
+.nav-right{gap:10px}
+.lang{padding:3px}.lang a,.lang span{padding:6px 12px;font-size:.78rem}
+.nav-demo.btn-outline{background:linear-gradient(135deg,#f58025,#e2551a);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(245,128,37,.34)}.nav-demo.btn-outline:hover{background:linear-gradient(135deg,#e2551a,#c75b2e);border-color:transparent;color:#fff;transform:translateY(-2px)}
+@media(max-width:980px){.nav-demo{display:none}}
 .hero,.subhero,.cta-band,.section.dark{position:relative;background:#080f20;color:#fff;overflow:hidden;isolation:isolate}
 .hero::before,.subhero::before,.cta-band::before,.section.dark::before{content:"";position:absolute;inset:-10%;z-index:-2;background:radial-gradient(700px 480px at 12% 0%,rgba(47,116,192,.5),transparent 60%),radial-gradient(680px 560px at 92% 8%,rgba(86,180,232,.28),transparent 55%),radial-gradient(640px 520px at 72% 118%,rgba(245,128,37,.18),transparent 62%);animation:semvecDrift 22s ease-in-out infinite alternate;will-change:transform}
 .hero::after,.subhero::after,.cta-band::after,.section.dark::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.6;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")}
@@ -414,11 +430,34 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 .nav-links{background:rgba(9,16,33,.98);border-bottom-color:rgba(255,255,255,.1)}
 .nav-links a{border-top-color:rgba(255,255,255,.12)}
 }
+.forward-card{max-width:780px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 12px 44px rgba(16,42,76,.10);padding:26px}
+.forward-msg{white-space:pre-wrap;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.85rem;line-height:1.75;color:var(--ink);background:var(--tint);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.forward-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center}
+.forward-note{font-size:.82rem;color:var(--muted)}
+.hero-altcta{margin:-2px 0 22px;font-size:.95rem}
+.hero-altcta a{color:#9fc3ee;font-weight:600;border-bottom:1px solid rgba(159,195,238,.45);padding-bottom:1px;transition:color .2s,border-color .2s}
+.hero-altcta a:hover{color:#fff;border-bottom-color:#fff}
+@media(max-width:680px){.forward-actions{flex-direction:column;align-items:stretch}.forward-actions .btn{width:100%;justify-content:center}.forward-note{text-align:center}}
+.indgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.indcard{display:flex;background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 36px rgba(16,42,76,.08);transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.indcard:hover{transform:translateY(-4px);box-shadow:0 24px 60px rgba(16,42,76,.18)}
+.indcard-img{position:relative;flex:0 0 42%;min-height:248px;background:var(--tint);overflow:hidden}
+.indcard-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.indcard:hover .indcard-img img{transform:scale(1.05)}
+.indcard-img .tag{position:absolute;left:13px;top:13px;z-index:2;font-size:.72rem;background:rgba(8,15,32,.78);color:#fff;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);box-shadow:0 4px 12px rgba(0,0,0,.28)}
+.indcard-body{flex:1;padding:22px 24px;display:flex;flex-direction:column;gap:11px;min-width:0}
+.indcard-body h3{font-size:1.16rem;line-height:1.25}
+.indcard-body p{font-size:.93rem;line-height:1.55}
+.indcard .cresult{margin-top:auto}
+.indcard .more{font-size:.88rem;font-weight:700;color:var(--blue)}
+@media(max-width:980px){.indgrid{grid-template-columns:1fr}}
+@media(max-width:520px){.indcard{flex-direction:column}.indcard-img{flex-basis:auto;min-height:0;height:200px}}
+.ind-eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.72rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--orange);display:block}
 </style>
 </head>
 <body>
 <div data-langroot="en" style="display:none"><header class="nav"><div class="wrap nav-inner">
-<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<a class="brand" href="index.html"><img class="logo-img" src="logo.png" alt="Semvec" width="30" height="30">Semvec</a>
 <nav class="nav-links">
 <a href="index.html#capabilities">Capabilities</a>
 <a href="index.html#usecases">Use cases</a>
@@ -426,14 +465,15 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="index.html#pricing">Pricing</a>
 <a href="index.html#faq">FAQ</a>
 </nav>
-<div class="nav-right"><span class="lang"><span class="on">EN</span><a onclick="semvecSetLang('de')">DE</a></span><a class="btn btn-primary nav-cta" href="#contact">Contact</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="nav-right"><span class="lang"><span class="on">EN</span><a onclick="semvecSetLang('de')">DE</a></span><a class="btn btn-outline nav-cta nav-demo" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live demo</a><a class="btn btn-primary nav-cta" href="#contact">Contact</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 </div></header><section class="hero" id="top"><div class="wrap hero-grid">
 <div>
-<p class="eyebrow fade d1">LLM AGENT MEMORY · mem0 & Letta alternative</p>
-<h1 class="fade d1">Give your AI a memory. <span class="grad">Not a runaway bill.</span></h1>
-<p class="lead fade d2">Most chatbots remember by re-sending the whole conversation every turn, so the longer they talk, the more you pay. Semvec keeps a small, fixed-size memory instead. Same memory, flat cost, one line of code.</p>
-<div class="hero-cta fade d3"><a class="btn btn-primary" href="#contact">Contact sales</a><a class="btn btn-ghost" href="#calculator">Calculate your savings</a></div>
-<div class="hero-trust fade d4"><span class="pip"><span class="d">$</span>pip install semvec</span><span>Rust core · Python API · no telemetry · runs on your servers</span></div>
+<p class="eyebrow fade d1">MEMORY FOR SUPPORT BOTS, COPILOTS &amp; AI AGENTS</p>
+<h1 class="fade d1">An AI that remembers your customers. <span class="grad">Without the runaway bill.</span></h1>
+<p class="lead fade d2">Whether it's a customer-support bot, an internal copilot or an AI agent, Semvec lets it remember past conversations — so it always picks up right where it left off. No giant prompts, no surprise invoices, just one flat, predictable cost.</p>
+<div class="hero-cta fade d3"><a class="btn btn-primary" href="https://demo.semvec.io/" target="_blank" rel="noopener">Try the live demo &#8594;</a><a class="btn btn-ghost" href="#contact">Talk to sales</a></div>
+<div class="hero-altcta fade d3"><a href="#calculator">Or calculate your savings &#8594;</a></div>
+<div class="hero-trust fade d4"><span class="pip"><span class="d">$</span>pip install semvec</span><span>Works with any LLM · Runs on your own servers · Set up in minutes</span></div>
 </div>
 <div class="hero-img fade d2"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
 <g class="sv-turns"><rect x="16" y="60" width="120" height="9" rx="4.5" style="animation-delay:0.00s"/><rect x="16" y="88" width="90" height="9" rx="4.5" style="animation-delay:0.20s"/><rect x="16" y="116" width="60" height="9" rx="4.5" style="animation-delay:0.40s"/><rect x="16" y="144" width="120" height="9" rx="4.5" style="animation-delay:0.60s"/><rect x="16" y="172" width="90" height="9" rx="4.5" style="animation-delay:0.80s"/><rect x="16" y="200" width="60" height="9" rx="4.5" style="animation-delay:1.00s"/></g>
@@ -444,7 +484,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <path class="sv-brace" d="M256,106 q-8,0 -8,8 v92 q0,8 8,8" fill="none"/>
 <g class="sv-grid" transform="translate(264,108)"><rect class="vc" x="0" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="18" y="0" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="36" y="0" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="54" y="0" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="72" y="0" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="90" y="0" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="108" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="18" y="18" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="36" y="18" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="54" y="18" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="72" y="18" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="90" y="18" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="108" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="0" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="18" y="36" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="36" y="36" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="54" y="36" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="72" y="36" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="90" y="36" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="108" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="0" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="18" y="54" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="36" y="54" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="54" y="54" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="72" y="54" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="90" y="54" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="108" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="0" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="18" y="72" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="36" y="72" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="54" y="72" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="72" y="72" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="90" y="72" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="108" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="18" y="90" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="36" y="90" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="54" y="90" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="72" y="90" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="90" y="90" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="108" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/></g>
 <text class="viz-label" x="320" y="234" text-anchor="middle">O(1) state</text></svg></div></div>
-</div></section><section class="stats"><div class="stat"><div class="stat-num">O(1)</div><div class="stat-lbl">cost per turn, it never grows</div></div><div class="stat"><div class="stat-num">~93<span class="u">%</span></div><div class="stat-lbl">fewer tokens you pay for</div></div><div class="stat"><div class="stat-num">0</div><div class="stat-lbl">extra AI calls to remember</div></div><div class="stat"><div class="stat-num">~8<span class="u">×</span></div><div class="stat-lbl">faster to replay a chat</div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">THE PROBLEM</p><h2>Why a chatbot’s bill explodes</h2><p>Tokens are the text your app sends to and from the AI, and what you’re billed for. To “remember”, most tools re-send the entire chat on every single message. By turn 100 that’s a huge prompt, paid for again and again.</p></div><div class="costchart">
+</div></section><section class="stats"><div class="stat"><div class="stat-num">~93<span class="u">%</span></div><div class="stat-lbl">smaller bill to give your AI a memory</div></div><div class="stat"><div class="stat-num">Flat</div><div class="stat-lbl">cost that never grows, however long the chat</div></div><div class="stat"><div class="stat-num">Never</div><div class="stat-lbl">forgets a past conversation</div></div><div class="stat"><div class="stat-num">~8<span class="u">×</span></div><div class="stat-lbl">faster to pick up where you left off</div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">THE PROBLEM</p><h2>Why AI memory gets so expensive</h2><p>To remember what was said, most tools re-send the whole conversation to the AI on every message, and you pay for all of it, every time. The longer the chat, the bigger each bill. Semvec sends just a short memory note instead, so your cost stays flat.</p></div><div class="costchart">
 <div class="cc-legend"><span class="cc-key"><i class="k-bad"></i>Normal chatbot, cost climbs</span><span class="cc-key"><i class="k-good"></i>Semvec, stays flat</span></div>
 <svg class="cc-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cost climbs every turn for a normal chatbot but stays flat with Semvec">
 <defs>
@@ -535,12 +575,24 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <g class="vault-cells" transform="translate(150,108)"><rect class="vc" x="0" y="0" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="22" y="0" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="44" y="0" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="66" y="0" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="88" y="0" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="22" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="22" y="22" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="44" y="22" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="66" y="22" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="88" y="22" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="0" y="44" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="22" y="44" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="44" y="44" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="66" y="44" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="88" y="44" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="66" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="22" y="66" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="44" y="66" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="66" y="66" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="88" y="66" width="16" height="16" rx="2" style="animation-delay:0.18s"/></g>
 <rect class="vault-lock" x="184" y="150" width="32" height="24" rx="5"/>
 <path class="vault-arc" d="M190,150 v-8 a10,10 0 0 1 20,0 v8" fill="none"/></svg></div></div><div class="uc-body"><span class="uc-tag">Regulated & EU</span><h3>Your data never leaves your servers</h3><p>Runs inside your own systems with no telemetry. GDPR Article 17 deletion with signed certificates and audit logs. Built in Munich.</p></div></div>
-</div></section><section class="section" id="industries"><div class="wrap"><div class="section-head"><p class="eyebrow">INDUSTRIES</p><h2>Built for real industries</h2></div>
-<div class="grid4">
-<a class="lcard icononly" href="industry-fintech.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div><div class="lcard-in"><h3>Financial services</h3><p>Exact numbers, auditable, data stays in-house.</p><span class="more">See the case study →</span></div></a>
-<a class="lcard icononly" href="industry-saas-dev.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><div class="lcard-in"><h3>SaaS & dev tools</h3><p>Agent fleets, dev copilots, reproducible runs.</p><span class="more">See the case study →</span></div></a>
-<a class="lcard icononly" href="industry-cx-support.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16 6a3 3 0 0 1 0 6M22 20c0-2.4-1.6-4.3-4-4.8"/></svg></div><div class="lcard-in"><h3>Customer support</h3><p>Remember every customer at huge volume.</p><span class="more">See the case study →</span></div></a>
-<a class="lcard icononly" href="industry-healthcare.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="lcard-in"><h3>Healthcare & public</h3><p>Privacy-critical, on-prem, fully auditable.</p><span class="more">See the case study →</span></div></a>
+</div></section><section class="section" id="industries"><div class="wrap"><div class="section-head"><p class="eyebrow">INDUSTRIES</p><h2>Built for real industries</h2><p>Real scenarios from finance, software, support and healthcare — and the result teams see with Semvec.</p></div>
+<div class="indgrid">
+<a class="indcard" href="industry-fintech.html">
+<div class="indcard-img"><span class="tag">Financial services</span><img src="assets/industry-fintech.jpg" alt="Finance team reviewing figures in a meeting" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">Financial services</span><h3>Exact numbers, full audit trail, data stays in-house</h3><p>Banks, payments and insurers can't send customer data to external AI, and regulators want every answer traceable. Semvec gives agents a memory that meets all three, on your own servers.</p><div class="cresult"><span class="l">Result</span> ~93% lower memory cost per case, with a full audit trail and zero data leaving your servers.</div><span class="more">Read the case study →</span></div>
+</a>
+<a class="indcard" href="industry-saas-dev.html">
+<div class="indcard-img"><span class="tag">SaaS &amp; dev tools</span><img src="assets/industry-saas-dev.jpg" alt="Software developer working at a laptop" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">SaaS &amp; dev tools</span><h3>One shared memory for whole agent fleets</h3><p>AI products and dev copilots run fleets of agents that need to share what they learn, and stay reproducible when something breaks. Semvec gives them one memory and bit-exact replay.</p><div class="cresult"><span class="l">Result</span> Flat cost across millions of agent runs, with ~8× faster, bit-exact replay.</div><span class="more">Read the case study →</span></div>
+</a>
+<a class="indcard" href="industry-cx-support.html">
+<div class="indcard-img"><span class="tag">Customer support</span><img src="assets/industry-cx-support.jpg" alt="Support agent wearing a headset" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">Customer support</span><h3>Remember every customer, at any volume</h3><p>Support copilots should remember every customer across every session, and stay affordable across millions of conversations. Semvec does both, and reads the mood too.</p><div class="cresult"><span class="l">Result</span> ~93% fewer tokens at peak volume, every customer remembered across every session.</div><span class="more">Read the case study →</span></div>
+</a>
+<a class="indcard" href="industry-healthcare.html">
+<div class="indcard-img"><span class="tag">Healthcare &amp; public</span><img src="assets/industry-healthcare.jpg" alt="Doctor in a clinical setting" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">Healthcare &amp; public</span><h3>Private by design, fully auditable</h3><p>In healthcare and the public sector, sensitive data can't leave the building and every decision must be traceable. Semvec runs entirely on your own systems, with verified deletion.</p><div class="cresult"><span class="l">Result</span> Zero data leaves your systems, with verified deletion and reproducible records.</div><span class="more">Read the case study →</span></div>
+</a>
 </div></div></section><section class="section dark"><div class="wrap"><div class="section-head"><p class="eyebrow">COMPARISON</p><h2>Same job. Different cost class.</h2><p>A drop-in alternative to mem0 and Letta, side by side.</p></div>
 <div class="cmp"><table><thead><tr><th></th><th>mem0</th><th class="sv">Semvec</th></tr></thead><tbody>
 <tr><td class="feat">Extra AI calls to save memory</td><td>dozens per turn</td><td class="sv">0</td></tr>
@@ -569,7 +621,32 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <div class="faq-item"><h3>What does it cost?</h3><p>Start free on the Community tier, no registration. Pro and Enterprise add higher rate limits, advanced retrieval and support; prices on request via vertrieb@versino.de. No surprise usage fees: licences are verified locally.</p></div>
 </div>
 <div class="center" style="margin-top:34px"><p style="margin-bottom:16px;font-size:1.02rem">Still have a question?</p><a class="btn btn-primary" href="#contact">Talk to us</a> <a class="btn btn-outline" href="#calculator">Estimate your savings</a></div>
-</div></section><section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
+</div></section>
+<section class="section tint" id="forward"><div class="wrap">
+<div class="section-head"><p class="eyebrow">FOR YOUR TECH TEAM</p><h2>Not the technical buyer? Send it to the right person.</h2><p>Semvec is a developer tool. If token cost, GDPR or self-hosting is your AI expert's or IT admin's call, forward them a ready-made summary — one click, no writing required.</p></div>
+<div class="forward-card">
+<div class="forward-msg" id="fwd-en">Hi,
+
+Found a tool that could cut our LLM memory and token bill — Semvec. Could you check whether it fits our stack?
+
+- Flat cost per turn: it stops re-sending the whole chat history (~93% fewer tokens)
+- Drop-in Python API, one-line install: pip install semvec
+- Rust core, runs in-process on our own servers — no telemetry, GDPR-friendly
+- Comparable recall to mem0 on the LOCOMO benchmark, ~8x faster replay
+- Plugs into Claude Code / Cursor via a built-in MCP server
+
+Live demo: https://demo.semvec.io/
+Docs: https://www.semvec.io/
+
+Thanks!</div>
+<div class="forward-actions">
+<button class="btn btn-primary" type="button" onclick="semvecEmailForward('fwd-en','Worth a look: Semvec — memory for our AI')">Email it to your team</button>
+<button class="btn btn-outline" type="button" onclick="semvecCopyForward('fwd-en',this)">Copy summary</button>
+<span class="forward-note">Pre-written for your AI expert or IT admin.</span>
+</div>
+</div>
+</div></section>
+<section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
 <div class="contact-copy">
 <p class="eyebrow">GET STARTED</p>
 <h2>See Semvec on your numbers</h2>
@@ -596,6 +673,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <p>Free Community tier. No registration. Wheels for Linux, macOS and Windows.</p>
 <div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
 <a class="btn btn-light" href="#contact">Talk to us</a>
+<a class="btn btn-light" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live demo &#8594;</a>
 <a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Read the docs</a></div>
 </div></section><footer class="footer"><div class="wrap">
 <div class="foot-grid">
@@ -614,12 +692,13 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="challenge-cut-costs.html">Cut memory costs</a>
 <a href="challenge-auditable-agents.html">Auditable agents</a>
 <a href="challenge-eu-data.html">Keep data in the EU</a>
+<a href="https://demo.semvec.io/" target="_blank" rel="noopener">Live demo</a>
 <a href="https://www.semvec.io/">Documentation</a></div>
 </div>
 <div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
 </div></footer></div>
 <div data-langroot="de" style="display:none"><header class="nav"><div class="wrap nav-inner">
-<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<a class="brand" href="index.html"><img class="logo-img" src="logo.png" alt="Semvec" width="30" height="30">Semvec</a>
 <nav class="nav-links">
 <a href="index.html#capabilities">Funktionen</a>
 <a href="index.html#usecases">Anwendungsfälle</a>
@@ -627,14 +706,15 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="index.html#pricing">Preise</a>
 <a href="index.html#faq">FAQ</a>
 </nav>
-<div class="nav-right"><span class="lang"><a onclick="semvecSetLang('en')">EN</a><span class="on">DE</span></span><a class="btn btn-primary nav-cta" href="#contact">Kontakt</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="nav-right"><span class="lang"><a onclick="semvecSetLang('en')">EN</a><span class="on">DE</span></span><a class="btn btn-outline nav-cta nav-demo" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo</a><a class="btn btn-primary nav-cta" href="#contact">Kontakt</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 </div></header><section class="hero" id="top"><div class="wrap hero-grid">
 <div>
-<p class="eyebrow fade d1">LLM-AGENTEN-SPEICHER · mem0- & Letta-Alternative</p>
-<h1 class="fade d1">Geben Sie Ihrer KI ein Gedächtnis. <span class="grad">Keine explodierende Rechnung.</span></h1>
-<p class="lead fade d2">Die meisten Chatbots merken sich Dinge, indem sie bei jedem Turn das ganze Gespräch erneut senden, je länger, desto teurer. Semvec hält stattdessen ein kleines, konstant großes Gedächtnis. Gleiches Erinnern, flache Kosten, eine Zeile Code.</p>
-<div class="hero-cta fade d3"><a class="btn btn-primary" href="#contact">Kontakt aufnehmen</a><a class="btn btn-ghost" href="#calculator">Ersparnis berechnen</a></div>
-<div class="hero-trust fade d4"><span class="pip"><span class="d">$</span>pip install semvec</span><span>Rust-Kern · Python-API · keine Telemetrie · läuft auf Ihren Servern</span></div>
+<p class="eyebrow fade d1">SPEICHER FÜR SUPPORT-BOTS, COPILOTS &amp; KI-AGENTEN</p>
+<h1 class="fade d1">Eine KI, die sich an Ihre Kunden erinnert. <span class="grad">Ohne explodierende Rechnung.</span></h1>
+<p class="lead fade d2">Ob Support-Bot, interner Copilot oder KI-Agent: Mit Semvec erinnert er sich an frühere Gespräche und macht genau dort weiter, wo er aufgehört hat. Keine riesigen Prompts, keine Überraschungen auf der Rechnung, nur flache, planbare Kosten.</p>
+<div class="hero-cta fade d3"><a class="btn btn-primary" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo testen &#8594;</a><a class="btn btn-ghost" href="#contact">Mit uns sprechen</a></div>
+<div class="hero-altcta fade d3"><a href="#calculator">Oder Ersparnis berechnen &#8594;</a></div>
+<div class="hero-trust fade d4"><span class="pip"><span class="d">$</span>pip install semvec</span><span>Funktioniert mit jedem LLM · Läuft auf Ihren Servern · In Minuten startklar</span></div>
 </div>
 <div class="hero-img fade d2"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
 <g class="sv-turns"><rect x="16" y="60" width="120" height="9" rx="4.5" style="animation-delay:0.00s"/><rect x="16" y="88" width="90" height="9" rx="4.5" style="animation-delay:0.20s"/><rect x="16" y="116" width="60" height="9" rx="4.5" style="animation-delay:0.40s"/><rect x="16" y="144" width="120" height="9" rx="4.5" style="animation-delay:0.60s"/><rect x="16" y="172" width="90" height="9" rx="4.5" style="animation-delay:0.80s"/><rect x="16" y="200" width="60" height="9" rx="4.5" style="animation-delay:1.00s"/></g>
@@ -645,7 +725,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <path class="sv-brace" d="M256,106 q-8,0 -8,8 v92 q0,8 8,8" fill="none"/>
 <g class="sv-grid" transform="translate(264,108)"><rect class="vc" x="0" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="18" y="0" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="36" y="0" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="54" y="0" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="72" y="0" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="90" y="0" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="108" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="18" y="18" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="36" y="18" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="54" y="18" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="72" y="18" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="90" y="18" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="108" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="0" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="18" y="36" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="36" y="36" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="54" y="36" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="72" y="36" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="90" y="36" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="108" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="0" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="18" y="54" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="36" y="54" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="54" y="54" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="72" y="54" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="90" y="54" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="108" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="0" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="18" y="72" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="36" y="72" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="54" y="72" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="72" y="72" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="90" y="72" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="108" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="18" y="90" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="36" y="90" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="54" y="90" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="72" y="90" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="90" y="90" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="108" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/></g>
 <text class="viz-label" x="320" y="234" text-anchor="middle">O(1) state</text></svg></div></div>
-</div></section><section class="stats"><div class="stat"><div class="stat-num">O(1)</div><div class="stat-lbl">Kosten pro Turn, wachsen nie</div></div><div class="stat"><div class="stat-num">~93<span class="u">%</span></div><div class="stat-lbl">weniger Tokens, die Sie zahlen</div></div><div class="stat"><div class="stat-num">0</div><div class="stat-lbl">extra KI-Calls fürs Erinnern</div></div><div class="stat"><div class="stat-num">~8<span class="u">×</span></div><div class="stat-lbl">schneller im Replay</div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">DAS PROBLEM</p><h2>Warum die Chatbot-Rechnung explodiert</h2><p>Tokens sind der Text, den Ihre App an die KI sendet und empfängt, und wofür Sie zahlen. Um sich zu „erinnern“, senden die meisten Tools bei jeder Nachricht das ganze Gespräch erneut. Bei Turn 100 ist das ein riesiger Prompt, immer und immer wieder bezahlt.</p></div><div class="costchart">
+</div></section><section class="stats"><div class="stat"><div class="stat-num">~93<span class="u">%</span></div><div class="stat-lbl">geringere Kosten für das Gedächtnis Ihrer KI</div></div><div class="stat"><div class="stat-num">Flach</div><div class="stat-lbl">Kosten, die nie steigen, egal wie lang der Chat</div></div><div class="stat"><div class="stat-num">Nie</div><div class="stat-lbl">vergisst ein früheres Gespräch</div></div><div class="stat"><div class="stat-num">~8<span class="u">×</span></div><div class="stat-lbl">schneller dort weiter, wo Sie aufgehört haben</div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">DAS PROBLEM</p><h2>Warum KI-Gedächtnis so teuer wird</h2><p>Um sich zu erinnern, senden die meisten Tools bei jeder Nachricht das ganze Gespräch erneut an die KI, und Sie zahlen jedes Mal für alles. Je länger der Chat, desto höher die Rechnung. Semvec sendet stattdessen nur eine kurze Gedächtnis-Notiz, damit Ihre Kosten flach bleiben.</p></div><div class="costchart">
 <div class="cc-legend"><span class="cc-key"><i class="k-bad"></i>Normaler Chatbot, Kosten steigen</span><span class="cc-key"><i class="k-good"></i>Semvec, bleibt flach</span></div>
 <svg class="cc-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kosten steigen bei einem normalen Chatbot, mit Semvec bleiben sie flach">
 <defs>
@@ -736,12 +816,24 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <g class="vault-cells" transform="translate(150,108)"><rect class="vc" x="0" y="0" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="22" y="0" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="44" y="0" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="66" y="0" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="88" y="0" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="22" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="22" y="22" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="44" y="22" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="66" y="22" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="88" y="22" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="0" y="44" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="22" y="44" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="44" y="44" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="66" y="44" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="88" y="44" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="66" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="22" y="66" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="44" y="66" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="66" y="66" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="88" y="66" width="16" height="16" rx="2" style="animation-delay:0.18s"/></g>
 <rect class="vault-lock" x="184" y="150" width="32" height="24" rx="5"/>
 <path class="vault-arc" d="M190,150 v-8 a10,10 0 0 1 20,0 v8" fill="none"/></svg></div></div><div class="uc-body"><span class="uc-tag">Reguliert & EU</span><h3>Ihre Daten verlassen nie Ihre Server</h3><p>Läuft in Ihren eigenen Systemen, ohne Telemetrie. DSGVO-Artikel-17-Löschung mit signierten Zertifikaten und Audit-Logs. Entwickelt in München.</p></div></div>
-</div></section><section class="section" id="industries"><div class="wrap"><div class="section-head"><p class="eyebrow">BRANCHEN</p><h2>Für echte Branchen gebaut</h2></div>
-<div class="grid4">
-<a class="lcard icononly" href="industry-fintech.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div><div class="lcard-in"><h3>Finanzdienstleister</h3><p>Exakte Zahlen, prüfbar, Daten bleiben im Haus.</p><span class="more">Zur Fallstudie →</span></div></a>
-<a class="lcard icononly" href="industry-saas-dev.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><div class="lcard-in"><h3>SaaS & Dev-Tools</h3><p>Agenten-Flotten, Dev-Copiloten, reproduzierbare Läufe.</p><span class="more">Zur Fallstudie →</span></div></a>
-<a class="lcard icononly" href="industry-cx-support.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16 6a3 3 0 0 1 0 6M22 20c0-2.4-1.6-4.3-4-4.8"/></svg></div><div class="lcard-in"><h3>Kundensupport</h3><p>Jeden Kunden erinnern, bei riesigem Volumen.</p><span class="more">Zur Fallstudie →</span></div></a>
-<a class="lcard icononly" href="industry-healthcare.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="lcard-in"><h3>Gesundheit & Public</h3><p>Datenschutzkritisch, on-prem, voll prüfbar.</p><span class="more">Zur Fallstudie →</span></div></a>
+</div></section><section class="section" id="industries"><div class="wrap"><div class="section-head"><p class="eyebrow">BRANCHEN</p><h2>Für echte Branchen gebaut</h2><p>Echte Szenarien aus Finanzwesen, Software, Support und Gesundheit – und das Ergebnis mit Semvec.</p></div>
+<div class="indgrid">
+<a class="indcard" href="industry-fintech.html">
+<div class="indcard-img"><span class="tag">Finanzdienstleister</span><img src="assets/industry-fintech.jpg" alt="Finanzteam bespricht Zahlen" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">Finanzdienstleister</span><h3>Exakte Zahlen, Audit-Trail, Daten im Haus</h3><p>Banken, Payment und Versicherer dürfen keine Kundendaten an externe KI senden, und die Aufsicht will jede Antwort nachvollziehbar. Semvec gibt Agenten ein Gedächtnis, das alle drei erfüllt – auf Ihren eigenen Servern.</p><div class="cresult"><span class="l">Ergebnis</span> ~93% geringere Speicherkosten pro Fall, voller Audit-Trail, keine Daten verlassen Ihre Server.</div><span class="more">Zur Fallstudie →</span></div>
+</a>
+<a class="indcard" href="industry-saas-dev.html">
+<div class="indcard-img"><span class="tag">SaaS &amp; Dev-Tools</span><img src="assets/industry-saas-dev.jpg" alt="Softwareentwicklerin arbeitet am Laptop" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">SaaS &amp; Dev-Tools</span><h3>Ein gemeinsames Gedächtnis für ganze Agenten-Flotten</h3><p>KI-Produkte und Dev-Copiloten betreiben Agenten-Flotten, die Gelerntes teilen und reproduzierbar sein müssen, wenn etwas bricht. Semvec gibt ihnen ein Gedächtnis und bit-genauen Replay.</p><div class="cresult"><span class="l">Ergebnis</span> Flache Kosten über Millionen Agenten-Läufe, ~8× schnellerer, bit-genauer Replay.</div><span class="more">Zur Fallstudie →</span></div>
+</a>
+<a class="indcard" href="industry-cx-support.html">
+<div class="indcard-img"><span class="tag">Kundensupport</span><img src="assets/industry-cx-support.jpg" alt="Support-Mitarbeiter mit Headset" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">Kundensupport</span><h3>Jeden Kunden erinnern, bei jedem Volumen</h3><p>Support-Copiloten sollten jeden Kunden über jede Sitzung hinweg erinnern und über Millionen Gespräche bezahlbar bleiben. Semvec kann beides – und erkennt auch die Stimmung.</p><div class="cresult"><span class="l">Ergebnis</span> ~93% weniger Tokens bei Spitzenlast, jeder Kunde über jede Sitzung erinnert.</div><span class="more">Zur Fallstudie →</span></div>
+</a>
+<a class="indcard" href="industry-healthcare.html">
+<div class="indcard-img"><span class="tag">Gesundheit &amp; Public</span><img src="assets/industry-healthcare.jpg" alt="Ärztin im klinischen Umfeld" loading="lazy"></div>
+<div class="indcard-body"><span class="ind-eyebrow">Gesundheit &amp; Public</span><h3>Privat by Design, voll prüfbar</h3><p>In Gesundheit und Verwaltung dürfen sensible Daten das Haus nicht verlassen, und jede Entscheidung muss nachvollziehbar sein. Semvec läuft vollständig auf Ihren Systemen, mit nachgewiesener Löschung.</p><div class="cresult"><span class="l">Ergebnis</span> 0 Daten verlassen Ihre Systeme, nachgewiesene Löschung und reproduzierbare Aufzeichnungen.</div><span class="more">Zur Fallstudie →</span></div>
+</a>
 </div></div></section><section class="section dark"><div class="wrap"><div class="section-head"><p class="eyebrow">VERGLEICH</p><h2>Gleicher Job. Andere Cost-Class.</h2><p>Eine Drop-in-Alternative zu mem0 und Letta, direkt gegenübergestellt.</p></div>
 <div class="cmp"><table><thead><tr><th></th><th>mem0</th><th class="sv">Semvec</th></tr></thead><tbody>
 <tr><td class="feat">Extra KI-Calls fürs Speichern</td><td>Dutzende pro Turn</td><td class="sv">0</td></tr>
@@ -770,7 +862,32 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <div class="faq-item"><h3>Was kostet es?</h3><p>Kostenlos starten in der Community-Stufe, ohne Registrierung. Pro und Enterprise bieten höhere Rate-Limits, erweitertes Retrieval und Support; Preise auf Anfrage über vertrieb@versino.de. Keine überraschenden Nutzungsgebühren: Lizenzen werden lokal verifiziert.</p></div>
 </div>
 <div class="center" style="margin-top:34px"><p style="margin-bottom:16px;font-size:1.02rem">Noch eine Frage offen?</p><a class="btn btn-primary" href="#contact">Mit uns sprechen</a> <a class="btn btn-outline" href="#calculator">Ersparnis schätzen</a></div>
-</div></section><section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
+</div></section>
+<section class="section tint" id="forward"><div class="wrap">
+<div class="section-head"><p class="eyebrow">FÜR IHR TECH-TEAM</p><h2>Nicht die technische Entscheidung? Leiten Sie es weiter.</h2><p>Semvec ist ein Entwickler-Tool. Wenn Token-Kosten, DSGVO oder Self-Hosting Sache Ihres KI-Experten oder IT-Admins sind, leiten Sie ihnen eine fertige Zusammenfassung weiter — ein Klick, ohne selbst zu schreiben.</p></div>
+<div class="forward-card">
+<div class="forward-msg" id="fwd-de">Hallo,
+
+ich bin auf Semvec gestoßen — ein Tool, das unsere LLM-Speicher- und Token-Kosten senken könnte. Kannst du prüfen, ob das zu unserem Stack passt?
+
+- Flache Kosten pro Turn: sendet nicht mehr den ganzen Chatverlauf erneut (~93% weniger Tokens)
+- Schlanke Python-API, Installation in einer Zeile: pip install semvec
+- Rust-Kern, läuft in-process auf unseren eigenen Servern — keine Telemetrie, DSGVO-freundlich
+- Vergleichbare Erinnerung wie mem0 im LOCOMO-Benchmark, ~8x schnelleres Replay
+- Funktioniert mit Claude Code / Cursor über einen eingebauten MCP-Server
+
+Live-Demo: https://demo.semvec.io/
+Doku: https://www.semvec.io/
+
+Danke!</div>
+<div class="forward-actions">
+<button class="btn btn-primary" type="button" onclick="semvecEmailForward('fwd-de','Mal ansehen: Semvec — Speicher für unsere KI')">Per E-Mail weiterleiten</button>
+<button class="btn btn-outline" type="button" onclick="semvecCopyForward('fwd-de',this)">Zusammenfassung kopieren</button>
+<span class="forward-note">Vorformuliert für Ihren KI-Experten oder IT-Admin.</span>
+</div>
+</div>
+</div></section>
+<section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
 <div class="contact-copy">
 <p class="eyebrow">LOSLEGEN</p>
 <h2>Semvec mit Ihren Zahlen sehen</h2>
@@ -797,6 +914,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <p>Kostenlose Community-Stufe. Keine Registrierung. Wheels für Linux, macOS und Windows.</p>
 <div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
 <a class="btn btn-light" href="#contact">Mit uns sprechen</a>
+<a class="btn btn-light" href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo &#8594;</a>
 <a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Dokumentation lesen</a></div>
 </div></section><footer class="footer"><div class="wrap">
 <div class="foot-grid">
@@ -815,6 +933,7 @@ html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
 <a href="challenge-cut-costs.html">Speicherkosten senken</a>
 <a href="challenge-auditable-agents.html">Prüfbare Agenten</a>
 <a href="challenge-eu-data.html">Daten in der EU</a>
+<a href="https://demo.semvec.io/" target="_blank" rel="noopener">Live-Demo</a>
 <a href="https://www.semvec.io/">Dokumentation</a></div>
 </div>
 <div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
@@ -839,6 +958,8 @@ function semvecCalc(box){
 }
 document.querySelectorAll('.calc').forEach(function(box){box.addEventListener('input',function(){semvecCalc(box)});semvecCalc(box)});
 semvecSetLang((function(){try{return localStorage.getItem('semvec_lang')}catch(_){return null}}())||'en');
+function semvecCopyForward(id,btn){var el=document.getElementById(id);if(!el)return;var txt=el.innerText;var label=(id.slice(-2)==='de')?'Kopiert!':'Copied!';function done(){var o=btn.getAttribute('data-o');if(!o){o=btn.textContent;btn.setAttribute('data-o',o)}btn.textContent=label;setTimeout(function(){btn.textContent=o},1800)}if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,done)}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(_){}document.body.removeChild(ta);done()}}
+function semvecEmailForward(id,subject){var el=document.getElementById(id);if(!el)return;window.location.href='mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(el.innerText)}
 </script>
 </body>
 </html>
