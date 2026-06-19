@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Cut your LLM memory costs, Semvec</title>
+<meta name="description" content="Stop paying more as your conversations get longer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1a4f8a;--blue-dark:#143f6f;--blue-soft:rgba(26,79,138,.06);--ink:#1e293b;--muted:#5d636d;--bg:#fff;--tint:#fafbfc;--border:#e0e6eb;--orange:#f58025;--orange-soft:rgba(245,128,37,.12);--r:16px;--shadow:0 1px 2px rgba(16,42,76,.04),0 8px 28px rgba(16,42,76,.06);--shadow-lg:0 20px 60px rgba(16,42,76,.12)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,system-ui,'Segoe UI',sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);margin-bottom:14px}
+h1{font-weight:800;font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;letter-spacing:-.02em;color:var(--blue)}
+h2{font-weight:800;font-size:clamp(1.6rem,3.4vw,2.2rem);line-height:1.15;letter-spacing:-.01em;color:var(--blue)}
+h3{font-weight:700;font-size:1.15rem;color:var(--blue);letter-spacing:-.01em}
+p{color:var(--muted)}
+.lead{font-size:1.16rem;line-height:1.7;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:.96rem;padding:13px 26px;border-radius:9999px;border:1.5px solid transparent;transition:transform .2s,box-shadow .2s,background .2s,color .2s;cursor:pointer}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 22px rgba(26,79,138,.22)}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 12px 30px rgba(26,79,138,.3)}
+.btn-outline{border-color:var(--blue);color:var(--blue)}
+.btn-outline:hover{background:var(--blue-soft);transform:translateY(-2px)}
+.btn-light{background:#fff;color:var(--blue)}.btn-light:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.btn-ghost{border-color:rgba(255,255,255,.4);color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.pip{display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.92rem;background:var(--tint);border:1px solid var(--border);color:var(--ink);padding:12px 18px;border-radius:10px}
+.pip .d{color:var(--orange);font-weight:700}
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{font-weight:800;font-size:1.2rem;color:var(--blue);letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.brand .mark{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--blue),#2f74c0);position:relative}
+.brand .mark::after{content:"";position:absolute;inset:0;margin:auto;width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.nav-links{display:flex;gap:26px;font-size:.92rem;font-weight:500;color:var(--muted)}
+.nav-links a:hover{color:var(--blue)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.lang{display:inline-flex;gap:2px;background:var(--tint);border:1px solid var(--border);border-radius:9999px;padding:3px}
+.lang a,.lang span{font-size:.76rem;font-weight:700;padding:5px 11px;border-radius:9999px;color:var(--muted);cursor:pointer}
+.lang .on{background:var(--blue);color:#fff}
+@media(max-width:920px){.nav-links{display:none}}
+.section{padding:88px 0}.section.tint{background:var(--tint)}.section.tight{padding:60px 0}
+.section-head{max-width:720px;margin:0 auto 52px;text-align:center}.section-head p{font-size:1.08rem;margin-top:14px}
+.center{text-align:center}
+.hero{padding:72px 0 80px;background:radial-gradient(1100px 520px at 80% -10%,rgba(26,79,138,.08),transparent 60%)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
+.hero .lead{margin:20px 0 28px;max-width:560px}
+.hero-cta{display:flex;gap:13px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.hero-trust{font-size:.85rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hero-img{border-radius:20px;border:1px solid var(--border);background:#fff;box-shadow:var(--shadow-lg);overflow:hidden}
+@media(max-width:880px){.hero-grid{grid-template-columns:1fr;gap:32px}.hero-img{order:-1}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--tint)}
+.stat{padding:32px 20px;text-align:center;border-left:1px solid var(--border)}.stat:first-child{border-left:none}
+.stat-num{font-size:2.2rem;font-weight:800;color:var(--blue);letter-spacing:-.02em;line-height:1}.stat-num .u{color:var(--orange)}
+.stat-lbl{font-size:.86rem;color:var(--muted);margin-top:8px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(odd){border-left:none}}
+/* before/after bars */
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:880px;margin:0 auto}
+.bars-panel{border:1px solid var(--border);border-radius:var(--r);padding:26px;background:#fff}
+.bars-panel.bad{background:var(--tint)}
+.bars-title{font-weight:700;font-size:1rem;margin-bottom:4px}.bars-title.bad{color:var(--muted)}.bars-title.good{color:var(--blue)}
+.bars-sub{font-size:.84rem;color:var(--muted);margin-bottom:22px}
+.bar-row{display:flex;align-items:flex-end;gap:14px;height:160px;padding-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%}
+.bar .col{width:100%;border-radius:7px 7px 0 0}
+.bar .lab{font-size:.72rem;color:var(--muted)}
+.bar.bad .col{background:linear-gradient(180deg,#c75b2e,#f58025)}
+.bar.good .col{background:linear-gradient(180deg,#2f74c0,#1a4f8a)}
+@media(max-width:760px){.bars{grid-template-columns:1fr}}
+/* calculator */
+.calc{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.calc-in{padding:32px;background:#fff}
+.calc-field{margin-bottom:18px}
+.calc-field label{display:block;font-size:.85rem;font-weight:600;color:var(--ink);margin-bottom:7px}
+.calc-field input{width:100%;font-family:'JetBrains Mono',monospace;font-size:1rem;padding:11px 14px;border:1px solid var(--border);border-radius:10px;color:var(--ink)}
+.calc-field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.calc-out{padding:32px;background:linear-gradient(160deg,var(--blue),var(--blue-dark));color:#fff;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.calc-out .big{font-size:2.6rem;font-weight:800;letter-spacing:-.02em;line-height:1}
+.calc-out .big .u{color:#ffb877}
+.calc-out .lbl{font-size:.85rem;color:rgba(255,255,255,.78)}
+.calc-out .row{display:flex;justify-content:space-between;font-size:.92rem;border-top:1px solid rgba(255,255,255,.16);padding-top:12px}
+.calc-out .row b{font-weight:700}
+.calc-note{font-size:.78rem;color:var(--muted);text-align:center;max-width:720px;margin:18px auto 0;font-style:italic}
+@media(max-width:760px){.calc{grid-template-columns:1fr}}
+/* feature split rows */
+.uc{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin-bottom:60px}.uc:last-child{margin-bottom:0}
+.uc.rev .uc-img{order:2}
+.uc-img{border-radius:var(--r);border:1px solid var(--border);background:var(--tint);box-shadow:var(--shadow);overflow:hidden}
+.uc-tag{display:inline-block;font-size:.73rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);padding:6px 12px;border-radius:9999px;margin-bottom:13px}
+.uc-body h3{font-size:1.45rem;margin-bottom:12px}.uc-body p{font-size:1.02rem;line-height:1.7}
+.uc-body .flist{margin-top:16px}
+@media(max-width:880px){.uc{grid-template-columns:1fr;gap:22px;margin-bottom:46px}.uc.rev .uc-img{order:0}}
+.flist{list-style:none;display:flex;flex-direction:column;gap:11px}
+.flist li{display:flex;gap:11px;align-items:flex-start;font-size:.98rem;color:var(--muted)}
+.flist .ic{width:22px;height:22px;flex-shrink:0;color:var(--blue);margin-top:2px}
+.flist b{color:var(--ink);font-weight:600}
+/* link cards (capabilities/industries grids) */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:980px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr}}
+.lcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
+.lcard:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.lcard .thumb{aspect-ratio:4/3;background:var(--tint);border-bottom:1px solid var(--border);overflow:hidden}
+.lcard .thumb img{width:100%;height:100%;object-fit:cover}
+.lcard-in{padding:22px;display:flex;flex-direction:column;gap:9px;flex:1}
+.lcard h3{font-size:1.08rem}.lcard p{font-size:.92rem;line-height:1.55;flex:1}
+.lcard .more{font-size:.86rem;font-weight:700;color:var(--blue)}
+.lcard.icononly .ic{width:46px;height:46px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;margin:22px 22px 0}
+.lcard.icononly .ic svg{width:24px;height:24px}
+/* case study cards */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:960px){.cases{grid-template-columns:1fr}}
+.case-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.case-thumb{aspect-ratio:4/3;overflow:hidden;border-bottom:1px solid var(--border)}.case-thumb img{width:100%;height:100%;object-fit:cover}
+.case-in{padding:22px;display:flex;flex-direction:column;gap:13px;flex:1}
+.tag{align-self:flex-start;font-size:.71rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);background:var(--orange-soft);padding:5px 11px;border-radius:9999px}
+.case-in h3{font-size:1.08rem;line-height:1.3}
+.cblock{font-size:.89rem}.cblock .l{font-weight:700;color:var(--ink);font-size:.71rem;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
+.cresult{margin-top:auto;background:var(--blue-soft);border-radius:10px;padding:13px 15px;font-size:.89rem;color:var(--ink)}.cresult .l{color:var(--blue)}
+.disclaim{text-align:center;font-size:.81rem;color:var(--muted);margin-top:26px;font-style:italic}
+/* comparison */
+.cmp{max-width:860px;margin:0 auto;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.cmp table{width:100%;border-collapse:collapse;font-size:.94rem}
+.cmp th,.cmp td{padding:15px 20px;text-align:left;border-top:1px solid var(--border)}
+.cmp thead th{border-top:none;font-size:.77rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.cmp thead th.sv{background:var(--blue);color:#fff;font-size:1rem;letter-spacing:0}
+.cmp td.sv{background:var(--blue-soft);color:var(--ink);font-weight:600}.cmp td.feat{color:var(--ink);font-weight:600}
+/* trust cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}@media(max-width:880px){.cards{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:26px;transition:transform .25s,box-shadow .25s}.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card-icon{width:44px;height:44px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;margin-bottom:15px}.card-icon svg{width:23px;height:23px}
+.card h3{font-size:1.04rem;margin-bottom:7px}.card p{font-size:.93rem;line-height:1.6}
+/* pricing */
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}@media(max-width:880px){.pricing{grid-template-columns:1fr}}
+.price-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:30px;display:flex;flex-direction:column;gap:15px}
+.price-card.feat{border-color:var(--blue);box-shadow:0 16px 44px rgba(26,79,138,.16);position:relative}
+.price-card.feat::before{content:attr(data-badge);position:absolute;top:-12px;left:30px;background:var(--orange);color:#fff;font-size:.69rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:9999px}
+.price-name{font-weight:700;color:var(--blue);font-size:1.12rem}.price-amt{font-size:1.8rem;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:.91rem;color:var(--muted)}
+.price-list li{display:flex;gap:9px;align-items:flex-start}.price-list .ic{width:17px;height:17px;color:var(--blue);flex-shrink:0;margin-top:3px}
+.price-card .btn{margin-top:auto;justify-content:center}.price-note{text-align:center;font-size:.83rem;color:var(--muted);margin-top:22px}
+/* faq */
+.faq{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px 26px}.faq-item h3{font-size:1.02rem;margin-bottom:7px}.faq-item p{font-size:.94rem;line-height:1.65}
+/* cta + footer */
+.cta-band{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;text-align:center;padding:78px 0}.cta-band h2{color:#fff;margin-bottom:13px}.cta-band p{color:rgba(255,255,255,.82);font-size:1.08rem;margin-bottom:28px}
+.cta-band .pip{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff}
+.cta-row{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;align-items:center}
+.footer{background:#0c2036;color:rgba(255,255,255,.62);padding:48px 0 30px;font-size:.88rem}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:28px;margin-bottom:30px}
+@media(max-width:760px){.foot-grid{grid-template-columns:1fr 1fr}}
+.foot-grid h4{color:#fff;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:13px}
+.foot-grid a{display:block;color:rgba(255,255,255,.62);padding:4px 0}.foot-grid a:hover{color:#fff}
+.foot-brand{font-weight:800;color:#fff;font-size:1.15rem;margin-bottom:10px}
+.foot-bot{border-top:1px solid rgba(255,255,255,.12);padding-top:20px;font-size:.82rem}
+/* sub-page hero + breadcrumb */
+.crumb{font-size:.84rem;color:var(--muted);padding:22px 0 0}.crumb a:hover{color:var(--blue)}.crumb .sep{margin:0 8px;opacity:.5}
+.subhero{padding:40px 0 64px}
+.subhero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
+@media(max-width:880px){.subhero-grid{grid-template-columns:1fr;gap:28px}}
+.subhero .lead{margin:18px 0 26px}
+.subhero-img{border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow-lg);overflow:hidden}
+.prose{max-width:760px;margin:0 auto;text-align:center}.prose p{font-size:1.1rem;line-height:1.75;margin-top:14px}
+.related{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.related a{border:1px solid var(--border);border-radius:9999px;padding:11px 20px;font-size:.92rem;font-weight:600;color:var(--blue);transition:background .2s}.related a:hover{background:var(--blue-soft)}
+.code{background:#0c2036;border-radius:14px;border:1px solid rgba(255,255,255,.08);padding:24px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.86rem;line-height:1.85;color:#dbe7f5;overflow-x:auto;box-shadow:var(--shadow-lg)}
+.code .k{color:#7fb0e6}.code .s{color:#9bd17e}.code .c{color:#5b7aa0}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fade{opacity:0;animation:up .7s cubic-bezier(.2,.7,.2,1) forwards}.d1{animation-delay:.05s}.d2{animation-delay:.13s}.d3{animation-delay:.21s}.d4{animation-delay:.29s}
+@media(prefers-reduced-motion:reduce){.fade{animation:none;opacity:1}}
+
+/* ====================== PREMIUM / BOLD OVERRIDES ====================== */
+body{font-family:'Inter',-apple-system,system-ui,sans-serif}
+h1,h2,h3,.brand,.stat-num,.calc-out .big,.price-amt{font-family:'Sora','Inter',sans-serif}
+h1{font-weight:700;font-size:clamp(2.5rem,5.8vw,4.1rem);line-height:1.02;letter-spacing:-.03em}
+h2{font-weight:700;font-size:clamp(1.9rem,3.8vw,2.7rem);line-height:1.08;letter-spacing:-.025em}
+h3{font-weight:600;letter-spacing:-.01em}
+.lead{font-size:1.2rem;line-height:1.65}
+.grad{background:linear-gradient(100deg,#3a86d6,#56b4e8 42%,#f58025 125%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.74rem;font-weight:500;letter-spacing:.24em;display:inline-flex;align-items:center;gap:10px}
+.eyebrow::before{display:none}
+.section-head .eyebrow{justify-content:center}
+.btn{font-weight:600;letter-spacing:-.01em;transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,background .25s,border-color .25s,color .25s}
+.btn-primary{background:linear-gradient(135deg,#1a4f8a,#2f74c0 70%,#3f88cf);box-shadow:0 10px 30px rgba(26,79,138,.4),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 46px rgba(47,116,192,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+.btn-ghost{border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.06);backdrop-filter:blur(6px)}
+.btn-ghost:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55);transform:translateY(-2px)}
+.nav{background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px)}
+.brand{font-weight:800}.brand .mark{box-shadow:0 4px 16px rgba(26,79,138,.5)}
+.hero,.subhero,.cta-band,.section.dark{position:relative;background:#080f20;color:#fff;overflow:hidden;isolation:isolate}
+.hero::before,.subhero::before,.cta-band::before,.section.dark::before{content:"";position:absolute;inset:-10%;z-index:-2;background:radial-gradient(700px 480px at 12% 0%,rgba(47,116,192,.5),transparent 60%),radial-gradient(680px 560px at 92% 8%,rgba(86,180,232,.28),transparent 55%),radial-gradient(640px 520px at 72% 118%,rgba(245,128,37,.18),transparent 62%);animation:semvecDrift 22s ease-in-out infinite alternate;will-change:transform}
+.hero::after,.subhero::after,.cta-band::after,.section.dark::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.6;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")}
+@keyframes semvecDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(2%,-2%,0) scale(1.12)}}
+.hero h1,.subhero h1,.section.dark h2{color:#fff}
+.hero .lead,.subhero .lead{color:rgba(255,255,255,.74)}
+.hero .eyebrow,.subhero .eyebrow,.cta-band .eyebrow,.section.dark .eyebrow{color:#8fbbed}
+.section.dark .section-head p{color:rgba(255,255,255,.7)}
+.hero{padding:100px 0 108px}
+.hero-trust{color:rgba(255,255,255,.6)}.hero-trust b{color:#fff}
+.hero .pip,.cta-band .pip{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:#eaf2fb}
+.hero-img{position:relative;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.18);border-radius:22px;box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 90px rgba(47,116,192,.32)}
+.hero-img img{border-radius:22px;display:block;width:100%}
+.hero-img::after{content:"O(1) cost / turn";position:absolute;left:16px;bottom:16px;font-family:'JetBrains Mono',monospace;font-size:.76rem;letter-spacing:.02em;color:#fff;background:rgba(8,15,32,.74);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);padding:8px 14px;border-radius:9999px}
+@media(max-width:880px){.hero-img::after{display:none}}
+.stats{position:relative;z-index:5;max-width:1180px;margin:-58px auto 0;padding:0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;background:transparent;border:none}
+.stat{background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px 22px;box-shadow:0 12px 44px rgba(16,42,76,.12)}
+.stat-num{font-weight:800;font-size:2.4rem;background:linear-gradient(135deg,#1a4f8a,#2f74c0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.stat-num .u{-webkit-text-fill-color:#f58025;color:#f58025}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);margin-top:-34px}}
+.lcard,.card,.case-card,.price-card,.faq-item{border-radius:18px}
+.lcard{position:relative;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.lcard .thumb img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.lcard:hover{transform:translateY(-5px);box-shadow:0 26px 64px rgba(16,42,76,.18)}
+.lcard:hover .thumb img{transform:scale(1.06)}
+.lcard::after{content:"";position:absolute;inset:0;border-radius:18px;padding:1.5px;background:linear-gradient(135deg,rgba(47,116,192,.7),rgba(245,128,37,.55));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
+.lcard:hover::after{opacity:1}
+.card{transition:transform .3s,box-shadow .3s,border-color .3s}
+.card:hover{transform:translateY(-4px);box-shadow:0 20px 52px rgba(16,42,76,.14);border-color:rgba(47,116,192,.4)}
+.card-icon{background:linear-gradient(135deg,rgba(26,79,138,.12),rgba(47,116,192,.16))}
+.section.dark .cmp{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.section.dark .cmp th,.section.dark .cmp td{border-top-color:rgba(255,255,255,.1);color:rgba(255,255,255,.82)}
+.section.dark .cmp thead th{color:rgba(255,255,255,.5)}
+.section.dark .cmp td.feat{color:#fff}
+.section.dark .cmp td.sv{background:linear-gradient(135deg,rgba(47,116,192,.4),rgba(47,116,192,.2));color:#fff}
+.section.dark .cmp thead th.sv{background:linear-gradient(135deg,#1a4f8a,#2f74c0)}
+.bars-panel{border-radius:18px;box-shadow:0 10px 36px rgba(16,42,76,.08)}
+.subhero{padding:58px 0 76px}
+.subhero .uc-tag{background:rgba(255,255,255,.08);color:#cfe0f5;border:1px solid rgba(255,255,255,.16)}
+.subhero .btn-outline,.hero .btn-outline{border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.06)}
+.subhero .btn-outline:hover,.hero .btn-outline:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55)}
+.subhero-img{position:relative;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 80px rgba(47,116,192,.3)}
+.subhero-img img{border-radius:20px}
+.cta-band{padding:96px 0}
+.calc{box-shadow:0 24px 70px rgba(16,42,76,.14)}
+@media(prefers-reduced-motion:no-preference){
+html.js .section{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+html.js .section.in{opacity:1;transform:none}
+html.js .bars .col{transform:scaleY(0);transform-origin:bottom;transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+html.js .section.in .bars .col{transform:scaleY(1)}
+html.js .bar:nth-child(2) .col{transition-delay:.1s}html.js .bar:nth-child(3) .col{transition-delay:.2s}html.js .bar:nth-child(4) .col{transition-delay:.3s}
+}
+/* animated cost chart */
+.costchart{max-width:880px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:22px;padding:30px 30px 22px;box-shadow:0 22px 60px rgba(16,42,76,.12)}
+.cc-legend{display:flex;gap:26px;justify-content:center;margin-bottom:10px;font-size:.86rem;color:var(--muted);font-weight:600;flex-wrap:wrap}
+.cc-key{display:inline-flex;align-items:center;gap:8px}
+.cc-key i{width:18px;height:4px;border-radius:2px;display:inline-block}
+.k-bad{background:linear-gradient(90deg,#f7a24f,#e2551a)}.k-good{background:#1a4f8a}
+.cc-svg{width:100%;height:auto;display:block}
+.cc-grid line{stroke:var(--border);stroke-width:1;stroke-dasharray:3 6}
+.cc-xlab text,.cc-ylab{fill:var(--muted);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px}
+.cc-savings{fill:#e2551a;font-family:'Sora','Inter',sans-serif;font-size:14px;font-weight:700;text-anchor:middle}
+.cc-runner{filter:drop-shadow(0 0 6px rgba(245,128,37,.7))}
+.cc-pulse{transform-box:fill-box;transform-origin:center}
+.cc-caption{text-align:center;max-width:640px;margin:16px auto 0;font-size:.95rem;color:var(--muted);line-height:1.6}
+@keyframes ccDraw{to{stroke-dashoffset:0}}
+@keyframes ccFade{to{opacity:1}}
+@keyframes ccPulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.6);opacity:0}}
+@media(prefers-reduced-motion:no-preference){
+html.js .cc-line{stroke-dasharray:900;stroke-dashoffset:900}
+html.js .section.in .cc-line{animation:ccDraw 1.8s cubic-bezier(.2,.7,.2,1) forwards}
+html.js .section.in .ln-good{animation-delay:.35s}
+html.js .cc-area,html.js .cc-savings{opacity:0}
+html.js .section.in .cc-area{animation:ccFade 1s ease .7s forwards}
+html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
+.cc-pulse{animation:ccPulse 2.4s ease-out infinite}
+}
+@media(prefers-reduced-motion:reduce){.cc-runner{display:none}}
+/* richer capability cards */
+.lcard.cap .thumb{position:relative}
+.cap-chip{position:absolute;left:14px;top:14px;background:rgba(8,15,32,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.68rem;letter-spacing:.02em;padding:6px 11px;border-radius:9999px}
+.lcard.cap .lcard-in{gap:9px}
+.cap-points{list-style:none;display:flex;flex-direction:column;gap:7px;margin:2px 0 10px}
+.cap-points li{display:flex;gap:8px;align-items:flex-start;font-size:.85rem;color:var(--muted);line-height:1.4}
+.cap-points .ic{width:15px;height:15px;color:var(--blue);flex-shrink:0;margin-top:3px}
+/* ===== crafted animated diagrams ===== */
+.vizwrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.viz{width:100%;height:auto;display:block;--vl:#1a4f8a;--va:#f58025;--vs:#cfe0f5;--vc:#e6edf6}
+.hero-img .viz,.subhero-img .viz{--vl:#bcd6f5;--va:#ffb877;--vs:rgba(255,255,255,.2);--vc:rgba(255,255,255,.13);padding:8px}
+.viz text{font-family:'JetBrains Mono',ui-monospace,monospace}
+.viz-label{font-size:13px;fill:var(--vl);opacity:.75}
+.viz-grid line,.viz-axis{stroke:var(--vc);stroke-width:1}
+.viz-grid line{stroke-dasharray:3 6}
+.sv-turns rect{fill:var(--vs);animation:vPulse 3s ease-in-out infinite}
+.sv-flow circle{fill:var(--va)}
+.sv-rays path{stroke:var(--vc);stroke-width:1;opacity:.5}
+.sv-node{fill:var(--va);filter:drop-shadow(0 0 6px rgba(245,128,37,.55))}
+.sv-link{stroke:var(--vc);stroke-width:2}
+.sv-brace{stroke:var(--vl);stroke-width:2;opacity:.45}
+.sv-grid .vc{fill:var(--vc);animation:vShim 2.6s ease-in-out infinite}
+.viz-area-bad{fill:var(--va);opacity:.14}
+.viz-line-bad{stroke:var(--va);stroke-width:3}
+.viz-line-good{stroke:var(--vl);stroke-width:3}
+.viz-runner{fill:var(--va);filter:drop-shadow(0 0 5px rgba(245,128,37,.55))}
+.viz-dot-good{fill:var(--vl)}
+.mem-mess{stroke:var(--vs);stroke-width:3;stroke-linecap:round;stroke-dasharray:6 8;animation:vDash 6s linear infinite}
+.viz-arrow{stroke:var(--vl);stroke-width:2;opacity:.6}
+.mg-edges line{stroke:var(--vc);stroke-width:2}
+.mg-node{fill:var(--vl);transform-box:fill-box;transform-origin:center;animation:vPop .6s ease-out both}
+.mg-node.accent{fill:var(--va)}
+.rc-query{fill:none;stroke:var(--vl);stroke-width:2}
+.rc-qtext{fill:var(--vl);font-size:12px}
+.rc-lines path{stroke:var(--vc);stroke-width:1.5}
+.rc-cell{fill:none;stroke:var(--vc);stroke-width:2}
+.rc-cell.hit{stroke:var(--va);animation:vGlow 2s ease-in-out infinite}
+.rc-return{fill:var(--va)}
+.sent-wave{stroke:var(--vs);stroke-width:3;stroke-linecap:round}
+.sent-peak{stroke:var(--va);stroke-width:3;stroke-linecap:round}
+.sent-runner{fill:var(--va);filter:drop-shadow(0 0 5px rgba(245,128,37,.55))}
+.ma-edges line{stroke:var(--vc);stroke-width:2}
+.ma-node{fill:var(--vl);transform-box:fill-box;transform-origin:center;animation:vPulse 2.4s ease-in-out infinite}
+.ma-core{fill:var(--va)}
+.ma-pulse{fill:none;stroke:var(--va);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:maPulse 2.6s ease-out infinite}
+.vault-shield{stroke:var(--vl);stroke-width:2.5;opacity:.5}
+.vault-pulse{stroke:var(--va);stroke-width:2;stroke-dasharray:680;stroke-dashoffset:680;animation:vDraw 3.4s ease-in-out infinite}
+.vault-cells .vc{fill:var(--vc);animation:vShim 2.6s ease-in-out infinite}
+.vault-lock{fill:none;stroke:var(--vl);stroke-width:2}
+.vault-arc{stroke:var(--vl);stroke-width:2}
+@keyframes vPulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes vShim{0%,100%{opacity:.4}50%{opacity:.95}}
+@keyframes svFlow{0%{transform:translateX(0);opacity:0}12%{opacity:1}82%{opacity:1}100%{transform:translateX(112px);opacity:0}}
+@keyframes vDash{to{stroke-dashoffset:-140}}
+@keyframes vPop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes vGlow{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes maPulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(3.4);opacity:0}}
+@keyframes vDraw{0%{stroke-dashoffset:680}60%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.sv-flow circle,.viz-runner,.sent-runner,.rc-return,.ma-pulse,.vault-pulse,.mem-mess{animation:none}}
+/* hero/subhero panels host light-stroke diagrams on dark */
+.hero-img,.subhero-img{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.hero-img::after{display:none}
+/* ===== contact form ===== */
+.section.contact{background:var(--tint)}
+.contact-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;align-items:start;max-width:1000px;margin:0 auto}
+@media(max-width:880px){.contact-grid{grid-template-columns:1fr;gap:30px}}
+.contact-copy .lead{margin:16px 0 22px}
+.contact-list{gap:10px;margin-bottom:20px}.contact-list li{font-size:.96rem}
+.contact-alt{font-size:.92rem;color:var(--muted)}.contact-alt a{color:var(--blue);font-weight:600}
+.contact-form{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:0 20px 60px rgba(16,42,76,.1);display:flex;flex-direction:column;gap:14px}
+.contact-form label{display:flex;flex-direction:column;gap:6px;font-size:.84rem;font-weight:600;color:var(--ink)}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.cf-row{grid-template-columns:1fr}}
+.contact-form input,.contact-form select,.contact-form textarea{font-family:inherit;font-size:.95rem;padding:11px 13px;border:1px solid var(--border);border-radius:10px;color:var(--ink);background:#fff;width:100%}
+.contact-form input:focus,.contact-form select:focus,.contact-form textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.cf-consent{flex-direction:row;align-items:flex-start;gap:9px;font-weight:400;font-size:.82rem;color:var(--muted)}
+.cf-consent input{width:auto;margin-top:3px}
+.contact-form .btn{justify-content:center;margin-top:4px}
+.cf-ok{color:#1a7f4b;font-weight:600;font-size:.95rem;text-align:center}
+/* ===== developed case study ===== */
+.cs2{background:#fff;border:1px solid var(--border);border-radius:22px;padding:32px;box-shadow:0 18px 50px rgba(16,42,76,.1)}
+.cs2-top{display:grid;grid-template-columns:170px 1fr;gap:26px;align-items:center;margin-bottom:24px}
+.cs2-viz{border:1px solid var(--border);border-radius:14px;background:var(--tint);overflow:hidden;aspect-ratio:4/3}
+.cs2-title{font-size:clamp(1.4rem,2.6vw,1.85rem);margin-top:8px}
+.cs2-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+@media(max-width:760px){.cs2-top{grid-template-columns:1fr}.cs2-grid{grid-template-columns:1fr;gap:16px}}
+.cs2 .l{font-weight:700;color:var(--blue);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px}
+.cs2-col p,.cs2-result p{font-size:.96rem;color:var(--muted);line-height:1.6}
+.cs2-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;padding:22px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+@media(max-width:620px){.cs2-metrics{grid-template-columns:1fr}}
+.cs2-metric{text-align:center}
+.cs2-v{font-family:'Sora',sans-serif;font-weight:800;font-size:1.9rem;background:linear-gradient(135deg,#1a4f8a,#2f74c0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;line-height:1}
+.cs2-ml{font-size:.82rem;color:var(--muted);margin-top:6px}
+.cs2-result{background:var(--blue-soft);border-radius:12px;padding:16px 18px;margin-bottom:22px}
+.cs2-quote{font-family:'Sora',sans-serif;font-size:1.15rem;font-weight:600;color:var(--ink);line-height:1.5;border-left:3px solid var(--orange);padding-left:18px}
+.cs2-quote cite{display:block;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:500;color:var(--muted);font-style:normal;margin-top:8px}
+/* ===== mobile optimization ===== */
+.nav-burger{display:none;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--blue);cursor:pointer}
+@media(max-width:880px){.hero-img{order:0}.hero-grid{gap:26px}.hero-img .viz{max-height:260px}.subhero-img .viz{max-height:240px}}
+@media(max-width:920px){
+.nav-burger{display:inline-flex}
+.nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:8px 24px 16px;box-shadow:0 20px 40px rgba(16,42,76,.12)}
+.nav.open .nav-links{display:flex}
+.nav-links a{padding:13px 2px;border-top:1px solid var(--border);font-size:1rem}
+.nav-links a:first-child{border-top:none}
+}
+@media(max-width:680px){
+.wrap{padding:0 18px}
+.section{padding:56px 0}.section.tight{padding:42px 0}
+.hero{padding:54px 0 68px}
+.section-head{margin-bottom:32px}.section-head p{font-size:1rem}
+.cmp{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cmp table{min-width:480px}
+.cmp th,.cmp td{padding:12px 12px;font-size:.86rem}
+.cs2{padding:20px}.cs2-top{grid-template-columns:1fr}
+.contact-form{padding:20px}
+.calc-out .big{font-size:2.1rem}
+}
+@media(max-width:560px){
+.nav-inner{height:58px}
+.nav-cta{padding:10px 16px;font-size:.88rem}
+.brand{font-size:1.06rem}
+.hero-cta{flex-direction:column;align-items:stretch;gap:11px;width:100%}
+.hero-cta .btn{width:100%;justify-content:center}
+.hero-trust{flex-direction:column;align-items:stretch;gap:12px}
+.hero-trust .pip{width:100%;justify-content:center}
+.cta-row{flex-direction:column;align-items:stretch}
+.cta-row .btn,.cta-row .pip{width:100%;justify-content:center}
+.related{flex-direction:column}.related a{text-align:center}
+}
+/* ===== dark premium nav (blends with hero, clean over light sections) ===== */
+.nav{background:rgba(9,16,33,.82);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+.brand{color:#fff}
+.nav-links a{color:rgba(255,255,255,.72)}
+.nav-links a:hover{color:#fff}
+.lang{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+.lang a,.lang span{color:rgba(255,255,255,.72)}
+.lang .on{background:#fff;color:#0a1628}
+.nav-burger{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+@media(max-width:920px){
+.nav-links{background:rgba(9,16,33,.98);border-bottom-color:rgba(255,255,255,.1)}
+.nav-links a{border-top-color:rgba(255,255,255,.12)}
+}
+</style>
+</head>
+<body>
+<div data-langroot="en" style="display:none"><header class="nav"><div class="wrap nav-inner">
+<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<nav class="nav-links">
+<a href="index.html#capabilities">Capabilities</a>
+<a href="index.html#usecases">Use cases</a>
+<a href="index.html#industries">Industries</a>
+<a href="index.html#pricing">Pricing</a>
+<a href="index.html#faq">FAQ</a>
+</nav>
+<div class="nav-right"><span class="lang"><span class="on">EN</span><a onclick="semvecSetLang('de')">DE</a></span><a class="btn btn-primary nav-cta" href="#contact">Contact</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+</div></header><div class="wrap crumb"><a href="index.html">Home</a><span class="sep">›</span><a href="index.html#capabilities">Solutions</a><span class="sep">›</span>“Our AI memory costs keep climbing”</div><section class="subhero"><div class="wrap"><div class="subhero-grid">
+<div><span class="uc-tag fade d1">Challenge</span><h1 class="fade d1" style="margin-top:6px">“Our AI memory costs keep climbing”</h1>
+<p class="lead fade d2">If your token bill grows with every turn of conversation, you’re paying to re-send history you already paid for. Semvec keeps memory a fixed small size, so cost stays flat.</p>
+<div class="fade d3"><a class="btn btn-primary" href="#contact">Talk to us</a> <a class="btn btn-outline" href="https://www.semvec.io/" target="_blank" rel="noopener">Read the docs</a></div></div>
+<div class="subhero-img fade d2"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="viz-grid"><line x1="40" y1="60" x2="370" y2="60"/><line x1="40" y1="110" x2="370" y2="110"/><line x1="40" y1="160" x2="370" y2="160"/><line x1="40" y1="210" x2="370" y2="210"/><line x1="40" y1="250" x2="370" y2="250"/></g>
+<path class="viz-area-bad" d="M40,244 C170,240 250,150 370,55 L370,250 Z"/>
+<path class="viz-line-bad cc-line" d="M40,244 C170,240 250,150 370,55" fill="none"/>
+<line class="viz-line-good" x1="40" y1="244" x2="370" y2="243"/>
+<circle class="viz-runner" r="5"><animateMotion dur="3s" repeatCount="indefinite" path="M40,244 C170,240 250,150 370,55"/></circle>
+<circle class="viz-dot-good" cx="370" cy="243" r="5"/>
+<text class="viz-label" x="200" y="120" text-anchor="middle">O(1) vs O(n)</text></svg></div></div>
+</div></div></section><section class="section"><div class="wrap"><div class="section-head"><h2>The problem, in one picture</h2></div><div class="costchart">
+<div class="cc-legend"><span class="cc-key"><i class="k-bad"></i>Normal chatbot, cost climbs</span><span class="cc-key"><i class="k-good"></i>Semvec, stays flat</span></div>
+<svg class="cc-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cost climbs every turn for a normal chatbot but stays flat with Semvec">
+<defs>
+<linearGradient id="ccBad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f58025" stop-opacity=".34"/><stop offset="1" stop-color="#f58025" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccGood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f74c0" stop-opacity=".26"/><stop offset="1" stop-color="#2f74c0" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7a24f"/><stop offset="1" stop-color="#e2551a"/></linearGradient>
+</defs>
+<g class="cc-grid"><line x1="50" y1="270" x2="650" y2="270"/><line x1="50" y1="210" x2="650" y2="210"/><line x1="50" y1="150" x2="650" y2="150"/><line x1="50" y1="90" x2="650" y2="90"/><line x1="50" y1="30" x2="650" y2="30"/></g>
+<path class="cc-area" d="M50,256 C250,250 380,150 650,30 L650,270 L50,270 Z" fill="url(#ccBad)"/>
+<path class="cc-area" d="M50,256 L650,254 L650,270 L50,270 Z" fill="url(#ccGood)"/>
+<path class="cc-line ln-bad" d="M50,256 C250,250 380,150 650,30" fill="none" stroke="url(#ccLine)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="cc-line ln-good" d="M50,256 L650,254" fill="none" stroke="#1a4f8a" stroke-width="3.5" stroke-linecap="round"/>
+<text class="cc-savings" x="300" y="120">what Semvec saves you</text>
+<circle class="cc-runner" r="6" fill="#f58025"><animateMotion dur="3.2s" repeatCount="indefinite" path="M50,256 C250,250 380,150 650,30"/></circle>
+<circle cx="650" cy="30" r="6" fill="#e2551a" stroke="#fff" stroke-width="2"/>
+<circle cx="650" cy="254" r="6" fill="#1a4f8a" stroke="#fff" stroke-width="2"/>
+<circle class="cc-pulse" cx="650" cy="254" r="6" fill="none" stroke="#1a4f8a" stroke-width="2"/>
+<g class="cc-xlab"><text x="50" y="290">Turn 1</text><text x="347" y="290" text-anchor="middle">Turn 50</text><text x="650" y="290" text-anchor="end">Turn 100</text></g>
+<text class="cc-ylab" x="20" y="150" transform="rotate(-90 20 150)" text-anchor="middle">cost / message</text>
+</svg>
+<p class="cc-caption">A normal chatbot re-sends the whole conversation every turn, so cost climbs and climbs. Semvec sends one small memory note, so it stays flat, no matter how long the chat.</p>
+</div></div></section><section class="section tint"><div class="wrap"><div class="section-head"><p class="eyebrow">COST CALCULATOR</p><h2>See what you could save</h2></div><div class="calc">
+<div class="calc-in">
+<div class="calc-field"><label>Conversations per month</label><input type="number" class="c-n" value="50000" min="0"></div>
+<div class="calc-field"><label>Average turns per conversation</label><input type="number" class="c-t" value="20" min="1"></div>
+<div class="calc-field"><label>Context tokens re-read per turn (no memory layer)</label><input type="number" class="c-c" value="8000" min="0"></div>
+<div class="calc-field"><label>Price per 1M tokens (€)</label><input type="number" class="c-p" value="5" min="0" step="0.5"></div>
+</div>
+<div class="calc-out">
+<div class="lbl">Estimated savings with Semvec</div>
+<div class="big"><span class="c-year">€0</span> <span class="u">/ year</span></div>
+<div class="row"><span>Reader tokens / month, today</span><b class="c-before">0</b></div>
+<div class="row"><span>With Semvec (~93% less)</span><b class="c-after">0</b></div>
+<div class="row"><span>Saved / month</span><b class="c-month">€0</b></div>
+</div></div>
+<p class="calc-note">Rough estimate using Semvec’s measured ~93% reduction in reader-context tokens (LOCOMO conv-44). Your model provider’s token pricing applies.</p></div></section><section class="section"><div class="wrap"><div class="prose"><p class="eyebrow">THE FIX</p><h2>Pay for memory once, not every turn</h2><p>Semvec stores the conversation as a small fixed-size memory with zero extra AI calls. Reader-context tokens drop ~93%, cost per turn becomes O(1), and updates run in under a millisecond on a normal CPU.</p></div></div></section><section class="section tint"><div class="wrap center"><h2 style="margin-bottom:26px">Explore more</h2><div class="related"><a href="cap-token-savings.html">Token & cost savings →</a><a href="industry-cx-support.html">Customer support →</a><a href="index.html#pricing">Pricing →</a></div></div></section><section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
+<div class="contact-copy">
+<p class="eyebrow">GET STARTED</p>
+<h2>See Semvec on your numbers</h2>
+<p class="lead">Tell us your use case and volume. We will come back, usually within one working day, with a tailored token-savings estimate and a clear path to production.</p>
+<ul class="flist contact-list">
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>A savings estimate on your real volume</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>A 30-minute technical walkthrough</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Runs on your own infrastructure, GDPR-ready</span></li>
+</ul>
+<p class="contact-alt">Prefer email? <a href="mailto:vertrieb@versino.de">vertrieb@versino.de</a></p>
+</div>
+<form class="contact-form" onsubmit="return semvecSubmit(this)">
+<div class="cf-row"><label>Name<input name="name" required></label><label>Work email<input type="email" name="email" required></label></div>
+<label>Company<input name="company"></label>
+<div class="cf-row"><label>Use case<select name="usecase"><option>Support copilot</option><option>Autonomous agents</option><option>High-volume chat</option><option>Regulated / on-prem</option><option>Other</option></select></label>
+<label>Conversations / month<select name="volume"><option>under 10k</option><option>10k to 100k</option><option>100k to 1M</option><option>1M+</option></select></label></div>
+<label>What are you building?<textarea name="message" rows="3"></textarea></label>
+<label class="cf-consent"><input type="checkbox" required> I agree to be contacted about Semvec.</label>
+<button class="btn btn-primary" type="submit">Request my savings estimate →</button>
+<p class="cf-ok" hidden>Thank you. We will be in touch within one working day.</p>
+</form>
+</div></div></section><section class="cta-band"><div class="wrap">
+<h2>Try it in 60 seconds</h2>
+<p>Free Community tier. No registration. Wheels for Linux, macOS and Windows.</p>
+<div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
+<a class="btn btn-light" href="#contact">Talk to us</a>
+<a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Read the docs</a></div>
+</div></section><footer class="footer"><div class="wrap">
+<div class="foot-grid">
+<div><div class="foot-brand">Semvec</div><p style="color:rgba(255,255,255,.55);max-width:260px">Constant-cost memory for LLM agents. Built by Versino PsiOmega GmbH, München.</p></div>
+<div><h4>Capabilities</h4>
+<a href="cap-token-savings.html">Token & cost savings</a>
+<a href="cap-memory-structure.html">Memory structure</a>
+<a href="cap-language-understanding.html">Language understanding</a>
+<a href="cap-tone-analysis.html">Tone analysis</a></div>
+<div><h4>Industries</h4>
+<a href="industry-fintech.html">Financial services</a>
+<a href="industry-saas-dev.html">SaaS & dev tools</a>
+<a href="industry-cx-support.html">Customer support</a>
+<a href="industry-healthcare.html">Healthcare & public</a></div>
+<div><h4>Solutions</h4>
+<a href="challenge-cut-costs.html">Cut memory costs</a>
+<a href="challenge-auditable-agents.html">Auditable agents</a>
+<a href="challenge-eu-data.html">Keep data in the EU</a>
+<a href="https://www.semvec.io/">Documentation</a></div>
+</div>
+<div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
+</div></footer></div>
+<div data-langroot="de" style="display:none"><header class="nav"><div class="wrap nav-inner">
+<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<nav class="nav-links">
+<a href="index.html#capabilities">Funktionen</a>
+<a href="index.html#usecases">Anwendungsfälle</a>
+<a href="index.html#industries">Branchen</a>
+<a href="index.html#pricing">Preise</a>
+<a href="index.html#faq">FAQ</a>
+</nav>
+<div class="nav-right"><span class="lang"><a onclick="semvecSetLang('en')">EN</a><span class="on">DE</span></span><a class="btn btn-primary nav-cta" href="#contact">Kontakt</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+</div></header><div class="wrap crumb"><a href="index.html">Start</a><span class="sep">›</span><a href="index.html#capabilities">Lösungen</a><span class="sep">›</span>„Unsere KI-Speicherkosten steigen ständig“</div><section class="subhero"><div class="wrap"><div class="subhero-grid">
+<div><span class="uc-tag fade d1">Herausforderung</span><h1 class="fade d1" style="margin-top:6px">„Unsere KI-Speicherkosten steigen ständig“</h1>
+<p class="lead fade d2">Wenn Ihre Token-Rechnung mit jedem Gesprächs-Turn wächst, zahlen Sie dafür, bereits bezahlte Historie erneut zu senden. Semvec hält das Gedächtnis konstant klein, die Kosten bleiben flach.</p>
+<div class="fade d3"><a class="btn btn-primary" href="#contact">Mit uns sprechen</a> <a class="btn btn-outline" href="https://www.semvec.io/" target="_blank" rel="noopener">Dokumentation</a></div></div>
+<div class="subhero-img fade d2"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="viz-grid"><line x1="40" y1="60" x2="370" y2="60"/><line x1="40" y1="110" x2="370" y2="110"/><line x1="40" y1="160" x2="370" y2="160"/><line x1="40" y1="210" x2="370" y2="210"/><line x1="40" y1="250" x2="370" y2="250"/></g>
+<path class="viz-area-bad" d="M40,244 C170,240 250,150 370,55 L370,250 Z"/>
+<path class="viz-line-bad cc-line" d="M40,244 C170,240 250,150 370,55" fill="none"/>
+<line class="viz-line-good" x1="40" y1="244" x2="370" y2="243"/>
+<circle class="viz-runner" r="5"><animateMotion dur="3s" repeatCount="indefinite" path="M40,244 C170,240 250,150 370,55"/></circle>
+<circle class="viz-dot-good" cx="370" cy="243" r="5"/>
+<text class="viz-label" x="200" y="120" text-anchor="middle">O(1) vs O(n)</text></svg></div></div>
+</div></div></section><section class="section"><div class="wrap"><div class="section-head"><h2>Das Problem in einem Bild</h2></div><div class="costchart">
+<div class="cc-legend"><span class="cc-key"><i class="k-bad"></i>Normaler Chatbot, Kosten steigen</span><span class="cc-key"><i class="k-good"></i>Semvec, bleibt flach</span></div>
+<svg class="cc-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kosten steigen bei einem normalen Chatbot, mit Semvec bleiben sie flach">
+<defs>
+<linearGradient id="ccBad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f58025" stop-opacity=".34"/><stop offset="1" stop-color="#f58025" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccGood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f74c0" stop-opacity=".26"/><stop offset="1" stop-color="#2f74c0" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7a24f"/><stop offset="1" stop-color="#e2551a"/></linearGradient>
+</defs>
+<g class="cc-grid"><line x1="50" y1="270" x2="650" y2="270"/><line x1="50" y1="210" x2="650" y2="210"/><line x1="50" y1="150" x2="650" y2="150"/><line x1="50" y1="90" x2="650" y2="90"/><line x1="50" y1="30" x2="650" y2="30"/></g>
+<path class="cc-area" d="M50,256 C250,250 380,150 650,30 L650,270 L50,270 Z" fill="url(#ccBad)"/>
+<path class="cc-area" d="M50,256 L650,254 L650,270 L50,270 Z" fill="url(#ccGood)"/>
+<path class="cc-line ln-bad" d="M50,256 C250,250 380,150 650,30" fill="none" stroke="url(#ccLine)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="cc-line ln-good" d="M50,256 L650,254" fill="none" stroke="#1a4f8a" stroke-width="3.5" stroke-linecap="round"/>
+<text class="cc-savings" x="300" y="120">was Semvec spart</text>
+<circle class="cc-runner" r="6" fill="#f58025"><animateMotion dur="3.2s" repeatCount="indefinite" path="M50,256 C250,250 380,150 650,30"/></circle>
+<circle cx="650" cy="30" r="6" fill="#e2551a" stroke="#fff" stroke-width="2"/>
+<circle cx="650" cy="254" r="6" fill="#1a4f8a" stroke="#fff" stroke-width="2"/>
+<circle class="cc-pulse" cx="650" cy="254" r="6" fill="none" stroke="#1a4f8a" stroke-width="2"/>
+<g class="cc-xlab"><text x="50" y="290">Turn 1</text><text x="347" y="290" text-anchor="middle">Turn 50</text><text x="650" y="290" text-anchor="end">Turn 100</text></g>
+<text class="cc-ylab" x="20" y="150" transform="rotate(-90 20 150)" text-anchor="middle">Kosten / Nachricht</text>
+</svg>
+<p class="cc-caption">Ein normaler Chatbot sendet bei jedem Turn das ganze Gespräch erneut, die Kosten steigen und steigen. Semvec sendet eine kleine Gedächtnis-Notiz, sie bleiben flach, egal wie lang der Chat.</p>
+</div></div></section><section class="section tint"><div class="wrap"><div class="section-head"><p class="eyebrow">KOSTENRECHNER</p><h2>Sehen Sie, was Sie sparen könnten</h2></div><div class="calc">
+<div class="calc-in">
+<div class="calc-field"><label>Gespräche pro Monat</label><input type="number" class="c-n" value="50000" min="0"></div>
+<div class="calc-field"><label>Durchschnittliche Turns pro Gespräch</label><input type="number" class="c-t" value="20" min="1"></div>
+<div class="calc-field"><label>Kontext-Tokens pro Turn (ohne Memory-Layer)</label><input type="number" class="c-c" value="8000" min="0"></div>
+<div class="calc-field"><label>Preis pro 1 Mio. Tokens (€)</label><input type="number" class="c-p" value="5" min="0" step="0.5"></div>
+</div>
+<div class="calc-out">
+<div class="lbl">Geschätzte Ersparnis mit Semvec</div>
+<div class="big"><span class="c-year">€0</span> <span class="u">/ Jahr</span></div>
+<div class="row"><span>Reader-Tokens / Monat, heute</span><b class="c-before">0</b></div>
+<div class="row"><span>Mit Semvec (~93 % weniger)</span><b class="c-after">0</b></div>
+<div class="row"><span>Ersparnis / Monat</span><b class="c-month">€0</b></div>
+</div></div>
+<p class="calc-note">Grobe Schätzung auf Basis der gemessenen ~93 %-Reduktion der Reader-Context-Tokens (LOCOMO conv-44). Es gilt die Token-Preisliste Ihres Modell-Anbieters.</p></div></section><section class="section"><div class="wrap"><div class="prose"><p class="eyebrow">DIE LÖSUNG</p><h2>Einmal fürs Gedächtnis zahlen, nicht jeden Turn</h2><p>Semvec speichert das Gespräch als kleines, konstant großes Gedächtnis, mit null extra KI-Calls. Reader-Context-Tokens sinken um ~93 %, die Kosten pro Turn werden O(1), und Updates laufen in unter einer Millisekunde auf normaler CPU.</p></div></div></section><section class="section tint"><div class="wrap center"><h2 style="margin-bottom:26px">Mehr entdecken</h2><div class="related"><a href="cap-token-savings.html">Token- & Kostenersparnis →</a><a href="industry-cx-support.html">Kundensupport →</a><a href="index.html#pricing">Preise →</a></div></div></section><section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
+<div class="contact-copy">
+<p class="eyebrow">LOSLEGEN</p>
+<h2>Semvec mit Ihren Zahlen sehen</h2>
+<p class="lead">Sagen Sie uns Ihren Use Case und Ihr Volumen. Wir melden uns, meist innerhalb eines Werktags, mit einer maßgeschneiderten Token-Ersparnis-Schätzung und einem klaren Weg in die Produktion.</p>
+<ul class="flist contact-list">
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Eine Ersparnis-Schätzung für Ihr echtes Volumen</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Ein 30-minütiger technischer Walkthrough</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Läuft auf Ihrer eigenen Infrastruktur, DSGVO-fähig</span></li>
+</ul>
+<p class="contact-alt">Lieber E-Mail? <a href="mailto:vertrieb@versino.de">vertrieb@versino.de</a></p>
+</div>
+<form class="contact-form" onsubmit="return semvecSubmit(this)">
+<div class="cf-row"><label>Name<input name="name" required></label><label>Geschäftliche E-Mail<input type="email" name="email" required></label></div>
+<label>Unternehmen<input name="company"></label>
+<div class="cf-row"><label>Anwendungsfall<select name="usecase"><option>Support-Copilot</option><option>Autonome Agenten</option><option>Hochvolumiger Chat</option><option>Reguliert / On-Prem</option><option>Andere</option></select></label>
+<label>Gespräche / Monat<select name="volume"><option>unter 10k</option><option>10k to 100k</option><option>100k to 1M</option><option>1M+</option></select></label></div>
+<label>Was bauen Sie?<textarea name="message" rows="3"></textarea></label>
+<label class="cf-consent"><input type="checkbox" required> Ich bin einverstanden, zu Semvec kontaktiert zu werden.</label>
+<button class="btn btn-primary" type="submit">Ersparnis-Schätzung anfordern →</button>
+<p class="cf-ok" hidden>Vielen Dank. Wir melden uns innerhalb eines Werktags.</p>
+</form>
+</div></div></section><section class="cta-band"><div class="wrap">
+<h2>In 60 Sekunden ausprobieren</h2>
+<p>Kostenlose Community-Stufe. Keine Registrierung. Wheels für Linux, macOS und Windows.</p>
+<div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
+<a class="btn btn-light" href="#contact">Mit uns sprechen</a>
+<a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Dokumentation lesen</a></div>
+</div></section><footer class="footer"><div class="wrap">
+<div class="foot-grid">
+<div><div class="foot-brand">Semvec</div><p style="color:rgba(255,255,255,.55);max-width:260px">Konstantkosten-Speicher für LLM-Agenten. Von der Versino PsiOmega GmbH, München.</p></div>
+<div><h4>Funktionen</h4>
+<a href="cap-token-savings.html">Token- & Kostenersparnis</a>
+<a href="cap-memory-structure.html">Speicher-Struktur</a>
+<a href="cap-language-understanding.html">Sprachverständnis</a>
+<a href="cap-tone-analysis.html">Tonalitätsanalyse</a></div>
+<div><h4>Branchen</h4>
+<a href="industry-fintech.html">Finanzdienstleister</a>
+<a href="industry-saas-dev.html">SaaS & Dev-Tools</a>
+<a href="industry-cx-support.html">Kundensupport</a>
+<a href="industry-healthcare.html">Gesundheit & Public</a></div>
+<div><h4>Lösungen</h4>
+<a href="challenge-cut-costs.html">Speicherkosten senken</a>
+<a href="challenge-auditable-agents.html">Prüfbare Agenten</a>
+<a href="challenge-eu-data.html">Daten in der EU</a>
+<a href="https://www.semvec.io/">Dokumentation</a></div>
+</div>
+<div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
+</div></footer></div>
+<script>
+document.documentElement.classList.add('js');
+var semvecIO=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');semvecIO.unobserve(e.target)}})},{rootMargin:'0px 0px -8% 0px'});
+function semvecArm(){var r=document.querySelector('[data-langroot][style*="block"]');if(r){r.querySelectorAll('.section:not(.in)').forEach(function(s){semvecIO.observe(s)})}}
+function semvecSetLang(l){document.querySelectorAll('[data-langroot]').forEach(function(e){e.style.display=(e.getAttribute('data-langroot')===l)?'block':'none';});try{localStorage.setItem('semvec_lang',l)}catch(_){}semvecArm()}
+function fmt(n,loc){return Math.round(n).toLocaleString(loc)}
+function semvecSubmit(f){f.querySelectorAll('input,select,textarea,button').forEach(function(el){el.disabled=true});var ok=f.querySelector('.cf-ok');if(ok)ok.hidden=false;return false}
+function semvecToggleMenu(b){var n=b.closest('.nav');if(n)n.classList.toggle('open')}
+function semvecCalc(box){
+  var root=box.closest('[data-langroot]');
+  var loc=(root&&root.getAttribute('data-langroot')==='de')?'de-DE':'en-US';
+  var n=+box.querySelector('.c-n').value||0,t=+box.querySelector('.c-t').value||0,c=+box.querySelector('.c-c').value||0,p=+box.querySelector('.c-p').value||0;
+  var before=n*t*c, after=before*0.07, savedTok=before-after, month=savedTok/1e6*p, year=month*12;
+  box.querySelector('.c-before').textContent=fmt(before,loc);
+  box.querySelector('.c-after').textContent=fmt(after,loc);
+  box.querySelector('.c-month').textContent='€'+fmt(month,loc);
+  box.querySelector('.c-year').textContent='€'+fmt(year,loc);
+}
+document.querySelectorAll('.calc').forEach(function(box){box.addEventListener('input',function(){semvecCalc(box)});semvecCalc(box)});
+semvecSetLang((function(){try{return localStorage.getItem('semvec_lang')}catch(_){return null}}())||'en');
+</script>
+</body>
+</html>

@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Semvec, Constant-cost memory for LLM agents | mem0 & Letta alternative</title>
+<meta name="description" content="Give your AI a memory without the runaway bill: ~93% fewer tokens, flat O(1) cost per turn, runs on your own servers, GDPR-ready. pip install semvec.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1a4f8a;--blue-dark:#143f6f;--blue-soft:rgba(26,79,138,.06);--ink:#1e293b;--muted:#5d636d;--bg:#fff;--tint:#fafbfc;--border:#e0e6eb;--orange:#f58025;--orange-soft:rgba(245,128,37,.12);--r:16px;--shadow:0 1px 2px rgba(16,42,76,.04),0 8px 28px rgba(16,42,76,.06);--shadow-lg:0 20px 60px rgba(16,42,76,.12)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,system-ui,'Segoe UI',sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);margin-bottom:14px}
+h1{font-weight:800;font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;letter-spacing:-.02em;color:var(--blue)}
+h2{font-weight:800;font-size:clamp(1.6rem,3.4vw,2.2rem);line-height:1.15;letter-spacing:-.01em;color:var(--blue)}
+h3{font-weight:700;font-size:1.15rem;color:var(--blue);letter-spacing:-.01em}
+p{color:var(--muted)}
+.lead{font-size:1.16rem;line-height:1.7;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:.96rem;padding:13px 26px;border-radius:9999px;border:1.5px solid transparent;transition:transform .2s,box-shadow .2s,background .2s,color .2s;cursor:pointer}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 8px 22px rgba(26,79,138,.22)}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 12px 30px rgba(26,79,138,.3)}
+.btn-outline{border-color:var(--blue);color:var(--blue)}
+.btn-outline:hover{background:var(--blue-soft);transform:translateY(-2px)}
+.btn-light{background:#fff;color:var(--blue)}.btn-light:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.btn-ghost{border-color:rgba(255,255,255,.4);color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.pip{display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.92rem;background:var(--tint);border:1px solid var(--border);color:var(--ink);padding:12px 18px;border-radius:10px}
+.pip .d{color:var(--orange);font-weight:700}
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{font-weight:800;font-size:1.2rem;color:var(--blue);letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.brand .mark{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--blue),#2f74c0);position:relative}
+.brand .mark::after{content:"";position:absolute;inset:0;margin:auto;width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.nav-links{display:flex;gap:26px;font-size:.92rem;font-weight:500;color:var(--muted)}
+.nav-links a:hover{color:var(--blue)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.lang{display:inline-flex;gap:2px;background:var(--tint);border:1px solid var(--border);border-radius:9999px;padding:3px}
+.lang a,.lang span{font-size:.76rem;font-weight:700;padding:5px 11px;border-radius:9999px;color:var(--muted);cursor:pointer}
+.lang .on{background:var(--blue);color:#fff}
+@media(max-width:920px){.nav-links{display:none}}
+.section{padding:88px 0}.section.tint{background:var(--tint)}.section.tight{padding:60px 0}
+.section-head{max-width:720px;margin:0 auto 52px;text-align:center}.section-head p{font-size:1.08rem;margin-top:14px}
+.center{text-align:center}
+.hero{padding:72px 0 80px;background:radial-gradient(1100px 520px at 80% -10%,rgba(26,79,138,.08),transparent 60%)}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
+.hero .lead{margin:20px 0 28px;max-width:560px}
+.hero-cta{display:flex;gap:13px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.hero-trust{font-size:.85rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hero-img{border-radius:20px;border:1px solid var(--border);background:#fff;box-shadow:var(--shadow-lg);overflow:hidden}
+@media(max-width:880px){.hero-grid{grid-template-columns:1fr;gap:32px}.hero-img{order:-1}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--tint)}
+.stat{padding:32px 20px;text-align:center;border-left:1px solid var(--border)}.stat:first-child{border-left:none}
+.stat-num{font-size:2.2rem;font-weight:800;color:var(--blue);letter-spacing:-.02em;line-height:1}.stat-num .u{color:var(--orange)}
+.stat-lbl{font-size:.86rem;color:var(--muted);margin-top:8px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(odd){border-left:none}}
+/* before/after bars */
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:880px;margin:0 auto}
+.bars-panel{border:1px solid var(--border);border-radius:var(--r);padding:26px;background:#fff}
+.bars-panel.bad{background:var(--tint)}
+.bars-title{font-weight:700;font-size:1rem;margin-bottom:4px}.bars-title.bad{color:var(--muted)}.bars-title.good{color:var(--blue)}
+.bars-sub{font-size:.84rem;color:var(--muted);margin-bottom:22px}
+.bar-row{display:flex;align-items:flex-end;gap:14px;height:160px;padding-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%}
+.bar .col{width:100%;border-radius:7px 7px 0 0}
+.bar .lab{font-size:.72rem;color:var(--muted)}
+.bar.bad .col{background:linear-gradient(180deg,#c75b2e,#f58025)}
+.bar.good .col{background:linear-gradient(180deg,#2f74c0,#1a4f8a)}
+@media(max-width:760px){.bars{grid-template-columns:1fr}}
+/* calculator */
+.calc{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr;gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.calc-in{padding:32px;background:#fff}
+.calc-field{margin-bottom:18px}
+.calc-field label{display:block;font-size:.85rem;font-weight:600;color:var(--ink);margin-bottom:7px}
+.calc-field input{width:100%;font-family:'JetBrains Mono',monospace;font-size:1rem;padding:11px 14px;border:1px solid var(--border);border-radius:10px;color:var(--ink)}
+.calc-field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.calc-out{padding:32px;background:linear-gradient(160deg,var(--blue),var(--blue-dark));color:#fff;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.calc-out .big{font-size:2.6rem;font-weight:800;letter-spacing:-.02em;line-height:1}
+.calc-out .big .u{color:#ffb877}
+.calc-out .lbl{font-size:.85rem;color:rgba(255,255,255,.78)}
+.calc-out .row{display:flex;justify-content:space-between;font-size:.92rem;border-top:1px solid rgba(255,255,255,.16);padding-top:12px}
+.calc-out .row b{font-weight:700}
+.calc-note{font-size:.78rem;color:var(--muted);text-align:center;max-width:720px;margin:18px auto 0;font-style:italic}
+@media(max-width:760px){.calc{grid-template-columns:1fr}}
+/* feature split rows */
+.uc{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin-bottom:60px}.uc:last-child{margin-bottom:0}
+.uc.rev .uc-img{order:2}
+.uc-img{border-radius:var(--r);border:1px solid var(--border);background:var(--tint);box-shadow:var(--shadow);overflow:hidden}
+.uc-tag{display:inline-block;font-size:.73rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);padding:6px 12px;border-radius:9999px;margin-bottom:13px}
+.uc-body h3{font-size:1.45rem;margin-bottom:12px}.uc-body p{font-size:1.02rem;line-height:1.7}
+.uc-body .flist{margin-top:16px}
+@media(max-width:880px){.uc{grid-template-columns:1fr;gap:22px;margin-bottom:46px}.uc.rev .uc-img{order:0}}
+.flist{list-style:none;display:flex;flex-direction:column;gap:11px}
+.flist li{display:flex;gap:11px;align-items:flex-start;font-size:.98rem;color:var(--muted)}
+.flist .ic{width:22px;height:22px;flex-shrink:0;color:var(--blue);margin-top:2px}
+.flist b{color:var(--ink);font-weight:600}
+/* link cards (capabilities/industries grids) */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:980px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr}}
+.lcard{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
+.lcard:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.lcard .thumb{aspect-ratio:4/3;background:var(--tint);border-bottom:1px solid var(--border);overflow:hidden}
+.lcard .thumb img{width:100%;height:100%;object-fit:cover}
+.lcard-in{padding:22px;display:flex;flex-direction:column;gap:9px;flex:1}
+.lcard h3{font-size:1.08rem}.lcard p{font-size:.92rem;line-height:1.55;flex:1}
+.lcard .more{font-size:.86rem;font-weight:700;color:var(--blue)}
+.lcard.icononly .ic{width:46px;height:46px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;margin:22px 22px 0}
+.lcard.icononly .ic svg{width:24px;height:24px}
+/* case study cards */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:960px){.cases{grid-template-columns:1fr}}
+.case-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.case-thumb{aspect-ratio:4/3;overflow:hidden;border-bottom:1px solid var(--border)}.case-thumb img{width:100%;height:100%;object-fit:cover}
+.case-in{padding:22px;display:flex;flex-direction:column;gap:13px;flex:1}
+.tag{align-self:flex-start;font-size:.71rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);background:var(--orange-soft);padding:5px 11px;border-radius:9999px}
+.case-in h3{font-size:1.08rem;line-height:1.3}
+.cblock{font-size:.89rem}.cblock .l{font-weight:700;color:var(--ink);font-size:.71rem;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:3px}
+.cresult{margin-top:auto;background:var(--blue-soft);border-radius:10px;padding:13px 15px;font-size:.89rem;color:var(--ink)}.cresult .l{color:var(--blue)}
+.disclaim{text-align:center;font-size:.81rem;color:var(--muted);margin-top:26px;font-style:italic}
+/* comparison */
+.cmp{max-width:860px;margin:0 auto;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.cmp table{width:100%;border-collapse:collapse;font-size:.94rem}
+.cmp th,.cmp td{padding:15px 20px;text-align:left;border-top:1px solid var(--border)}
+.cmp thead th{border-top:none;font-size:.77rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.cmp thead th.sv{background:var(--blue);color:#fff;font-size:1rem;letter-spacing:0}
+.cmp td.sv{background:var(--blue-soft);color:var(--ink);font-weight:600}.cmp td.feat{color:var(--ink);font-weight:600}
+/* trust cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}@media(max-width:880px){.cards{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:26px;transition:transform .25s,box-shadow .25s}.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card-icon{width:44px;height:44px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;margin-bottom:15px}.card-icon svg{width:23px;height:23px}
+.card h3{font-size:1.04rem;margin-bottom:7px}.card p{font-size:.93rem;line-height:1.6}
+/* pricing */
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}@media(max-width:880px){.pricing{grid-template-columns:1fr}}
+.price-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:30px;display:flex;flex-direction:column;gap:15px}
+.price-card.feat{border-color:var(--blue);box-shadow:0 16px 44px rgba(26,79,138,.16);position:relative}
+.price-card.feat::before{content:attr(data-badge);position:absolute;top:-12px;left:30px;background:var(--orange);color:#fff;font-size:.69rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 12px;border-radius:9999px}
+.price-name{font-weight:700;color:var(--blue);font-size:1.12rem}.price-amt{font-size:1.8rem;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.price-list{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:.91rem;color:var(--muted)}
+.price-list li{display:flex;gap:9px;align-items:flex-start}.price-list .ic{width:17px;height:17px;color:var(--blue);flex-shrink:0;margin-top:3px}
+.price-card .btn{margin-top:auto;justify-content:center}.price-note{text-align:center;font-size:.83rem;color:var(--muted);margin-top:22px}
+/* faq */
+.faq{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px 26px}.faq-item h3{font-size:1.02rem;margin-bottom:7px}.faq-item p{font-size:.94rem;line-height:1.65}
+/* cta + footer */
+.cta-band{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;text-align:center;padding:78px 0}.cta-band h2{color:#fff;margin-bottom:13px}.cta-band p{color:rgba(255,255,255,.82);font-size:1.08rem;margin-bottom:28px}
+.cta-band .pip{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff}
+.cta-row{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;align-items:center}
+.footer{background:#0c2036;color:rgba(255,255,255,.62);padding:48px 0 30px;font-size:.88rem}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:28px;margin-bottom:30px}
+@media(max-width:760px){.foot-grid{grid-template-columns:1fr 1fr}}
+.foot-grid h4{color:#fff;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:13px}
+.foot-grid a{display:block;color:rgba(255,255,255,.62);padding:4px 0}.foot-grid a:hover{color:#fff}
+.foot-brand{font-weight:800;color:#fff;font-size:1.15rem;margin-bottom:10px}
+.foot-bot{border-top:1px solid rgba(255,255,255,.12);padding-top:20px;font-size:.82rem}
+/* sub-page hero + breadcrumb */
+.crumb{font-size:.84rem;color:var(--muted);padding:22px 0 0}.crumb a:hover{color:var(--blue)}.crumb .sep{margin:0 8px;opacity:.5}
+.subhero{padding:40px 0 64px}
+.subhero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:46px;align-items:center}
+@media(max-width:880px){.subhero-grid{grid-template-columns:1fr;gap:28px}}
+.subhero .lead{margin:18px 0 26px}
+.subhero-img{border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow-lg);overflow:hidden}
+.prose{max-width:760px;margin:0 auto;text-align:center}.prose p{font-size:1.1rem;line-height:1.75;margin-top:14px}
+.related{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.related a{border:1px solid var(--border);border-radius:9999px;padding:11px 20px;font-size:.92rem;font-weight:600;color:var(--blue);transition:background .2s}.related a:hover{background:var(--blue-soft)}
+.code{background:#0c2036;border-radius:14px;border:1px solid rgba(255,255,255,.08);padding:24px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.86rem;line-height:1.85;color:#dbe7f5;overflow-x:auto;box-shadow:var(--shadow-lg)}
+.code .k{color:#7fb0e6}.code .s{color:#9bd17e}.code .c{color:#5b7aa0}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.fade{opacity:0;animation:up .7s cubic-bezier(.2,.7,.2,1) forwards}.d1{animation-delay:.05s}.d2{animation-delay:.13s}.d3{animation-delay:.21s}.d4{animation-delay:.29s}
+@media(prefers-reduced-motion:reduce){.fade{animation:none;opacity:1}}
+
+/* ====================== PREMIUM / BOLD OVERRIDES ====================== */
+body{font-family:'Inter',-apple-system,system-ui,sans-serif}
+h1,h2,h3,.brand,.stat-num,.calc-out .big,.price-amt{font-family:'Sora','Inter',sans-serif}
+h1{font-weight:700;font-size:clamp(2.5rem,5.8vw,4.1rem);line-height:1.02;letter-spacing:-.03em}
+h2{font-weight:700;font-size:clamp(1.9rem,3.8vw,2.7rem);line-height:1.08;letter-spacing:-.025em}
+h3{font-weight:600;letter-spacing:-.01em}
+.lead{font-size:1.2rem;line-height:1.65}
+.grad{background:linear-gradient(100deg,#3a86d6,#56b4e8 42%,#f58025 125%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.eyebrow{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.74rem;font-weight:500;letter-spacing:.24em;display:inline-flex;align-items:center;gap:10px}
+.eyebrow::before{display:none}
+.section-head .eyebrow{justify-content:center}
+.btn{font-weight:600;letter-spacing:-.01em;transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,background .25s,border-color .25s,color .25s}
+.btn-primary{background:linear-gradient(135deg,#1a4f8a,#2f74c0 70%,#3f88cf);box-shadow:0 10px 30px rgba(26,79,138,.4),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 46px rgba(47,116,192,.55),inset 0 1px 0 rgba(255,255,255,.3)}
+.btn-ghost{border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.06);backdrop-filter:blur(6px)}
+.btn-ghost:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55);transform:translateY(-2px)}
+.nav{background:rgba(255,255,255,.8);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px)}
+.brand{font-weight:800}.brand .mark{box-shadow:0 4px 16px rgba(26,79,138,.5)}
+.hero,.subhero,.cta-band,.section.dark{position:relative;background:#080f20;color:#fff;overflow:hidden;isolation:isolate}
+.hero::before,.subhero::before,.cta-band::before,.section.dark::before{content:"";position:absolute;inset:-10%;z-index:-2;background:radial-gradient(700px 480px at 12% 0%,rgba(47,116,192,.5),transparent 60%),radial-gradient(680px 560px at 92% 8%,rgba(86,180,232,.28),transparent 55%),radial-gradient(640px 520px at 72% 118%,rgba(245,128,37,.18),transparent 62%);animation:semvecDrift 22s ease-in-out infinite alternate;will-change:transform}
+.hero::after,.subhero::after,.cta-band::after,.section.dark::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.6;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E")}
+@keyframes semvecDrift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(2%,-2%,0) scale(1.12)}}
+.hero h1,.subhero h1,.section.dark h2{color:#fff}
+.hero .lead,.subhero .lead{color:rgba(255,255,255,.74)}
+.hero .eyebrow,.subhero .eyebrow,.cta-band .eyebrow,.section.dark .eyebrow{color:#8fbbed}
+.section.dark .section-head p{color:rgba(255,255,255,.7)}
+.hero{padding:100px 0 108px}
+.hero-trust{color:rgba(255,255,255,.6)}.hero-trust b{color:#fff}
+.hero .pip,.cta-band .pip{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:#eaf2fb}
+.hero-img{position:relative;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.18);border-radius:22px;box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 90px rgba(47,116,192,.32)}
+.hero-img img{border-radius:22px;display:block;width:100%}
+.hero-img::after{content:"O(1) cost / turn";position:absolute;left:16px;bottom:16px;font-family:'JetBrains Mono',monospace;font-size:.76rem;letter-spacing:.02em;color:#fff;background:rgba(8,15,32,.74);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);padding:8px 14px;border-radius:9999px}
+@media(max-width:880px){.hero-img::after{display:none}}
+.stats{position:relative;z-index:5;max-width:1180px;margin:-58px auto 0;padding:0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;background:transparent;border:none}
+.stat{background:#fff;border:1px solid var(--border);border-radius:18px;padding:28px 22px;box-shadow:0 12px 44px rgba(16,42,76,.12)}
+.stat-num{font-weight:800;font-size:2.4rem;background:linear-gradient(135deg,#1a4f8a,#2f74c0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.stat-num .u{-webkit-text-fill-color:#f58025;color:#f58025}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);margin-top:-34px}}
+.lcard,.card,.case-card,.price-card,.faq-item{border-radius:18px}
+.lcard{position:relative;transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.lcard .thumb img{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.lcard:hover{transform:translateY(-5px);box-shadow:0 26px 64px rgba(16,42,76,.18)}
+.lcard:hover .thumb img{transform:scale(1.06)}
+.lcard::after{content:"";position:absolute;inset:0;border-radius:18px;padding:1.5px;background:linear-gradient(135deg,rgba(47,116,192,.7),rgba(245,128,37,.55));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .3s;pointer-events:none}
+.lcard:hover::after{opacity:1}
+.card{transition:transform .3s,box-shadow .3s,border-color .3s}
+.card:hover{transform:translateY(-4px);box-shadow:0 20px 52px rgba(16,42,76,.14);border-color:rgba(47,116,192,.4)}
+.card-icon{background:linear-gradient(135deg,rgba(26,79,138,.12),rgba(47,116,192,.16))}
+.section.dark .cmp{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03);box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.section.dark .cmp th,.section.dark .cmp td{border-top-color:rgba(255,255,255,.1);color:rgba(255,255,255,.82)}
+.section.dark .cmp thead th{color:rgba(255,255,255,.5)}
+.section.dark .cmp td.feat{color:#fff}
+.section.dark .cmp td.sv{background:linear-gradient(135deg,rgba(47,116,192,.4),rgba(47,116,192,.2));color:#fff}
+.section.dark .cmp thead th.sv{background:linear-gradient(135deg,#1a4f8a,#2f74c0)}
+.bars-panel{border-radius:18px;box-shadow:0 10px 36px rgba(16,42,76,.08)}
+.subhero{padding:58px 0 76px}
+.subhero .uc-tag{background:rgba(255,255,255,.08);color:#cfe0f5;border:1px solid rgba(255,255,255,.16)}
+.subhero .btn-outline,.hero .btn-outline{border:1px solid rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.06)}
+.subhero .btn-outline:hover,.hero .btn-outline:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55)}
+.subhero-img{position:relative;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.18);border-radius:20px;box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 80px rgba(47,116,192,.3)}
+.subhero-img img{border-radius:20px}
+.cta-band{padding:96px 0}
+.calc{box-shadow:0 24px 70px rgba(16,42,76,.14)}
+@media(prefers-reduced-motion:no-preference){
+html.js .section{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+html.js .section.in{opacity:1;transform:none}
+html.js .bars .col{transform:scaleY(0);transform-origin:bottom;transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+html.js .section.in .bars .col{transform:scaleY(1)}
+html.js .bar:nth-child(2) .col{transition-delay:.1s}html.js .bar:nth-child(3) .col{transition-delay:.2s}html.js .bar:nth-child(4) .col{transition-delay:.3s}
+}
+/* animated cost chart */
+.costchart{max-width:880px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:22px;padding:30px 30px 22px;box-shadow:0 22px 60px rgba(16,42,76,.12)}
+.cc-legend{display:flex;gap:26px;justify-content:center;margin-bottom:10px;font-size:.86rem;color:var(--muted);font-weight:600;flex-wrap:wrap}
+.cc-key{display:inline-flex;align-items:center;gap:8px}
+.cc-key i{width:18px;height:4px;border-radius:2px;display:inline-block}
+.k-bad{background:linear-gradient(90deg,#f7a24f,#e2551a)}.k-good{background:#1a4f8a}
+.cc-svg{width:100%;height:auto;display:block}
+.cc-grid line{stroke:var(--border);stroke-width:1;stroke-dasharray:3 6}
+.cc-xlab text,.cc-ylab{fill:var(--muted);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px}
+.cc-savings{fill:#e2551a;font-family:'Sora','Inter',sans-serif;font-size:14px;font-weight:700;text-anchor:middle}
+.cc-runner{filter:drop-shadow(0 0 6px rgba(245,128,37,.7))}
+.cc-pulse{transform-box:fill-box;transform-origin:center}
+.cc-caption{text-align:center;max-width:640px;margin:16px auto 0;font-size:.95rem;color:var(--muted);line-height:1.6}
+@keyframes ccDraw{to{stroke-dashoffset:0}}
+@keyframes ccFade{to{opacity:1}}
+@keyframes ccPulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.6);opacity:0}}
+@media(prefers-reduced-motion:no-preference){
+html.js .cc-line{stroke-dasharray:900;stroke-dashoffset:900}
+html.js .section.in .cc-line{animation:ccDraw 1.8s cubic-bezier(.2,.7,.2,1) forwards}
+html.js .section.in .ln-good{animation-delay:.35s}
+html.js .cc-area,html.js .cc-savings{opacity:0}
+html.js .section.in .cc-area{animation:ccFade 1s ease .7s forwards}
+html.js .section.in .cc-savings{animation:ccFade 1s ease 1.2s forwards}
+.cc-pulse{animation:ccPulse 2.4s ease-out infinite}
+}
+@media(prefers-reduced-motion:reduce){.cc-runner{display:none}}
+/* richer capability cards */
+.lcard.cap .thumb{position:relative}
+.cap-chip{position:absolute;left:14px;top:14px;background:rgba(8,15,32,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.2);color:#fff;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.68rem;letter-spacing:.02em;padding:6px 11px;border-radius:9999px}
+.lcard.cap .lcard-in{gap:9px}
+.cap-points{list-style:none;display:flex;flex-direction:column;gap:7px;margin:2px 0 10px}
+.cap-points li{display:flex;gap:8px;align-items:flex-start;font-size:.85rem;color:var(--muted);line-height:1.4}
+.cap-points .ic{width:15px;height:15px;color:var(--blue);flex-shrink:0;margin-top:3px}
+/* ===== crafted animated diagrams ===== */
+.vizwrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.viz{width:100%;height:auto;display:block;--vl:#1a4f8a;--va:#f58025;--vs:#cfe0f5;--vc:#e6edf6}
+.hero-img .viz,.subhero-img .viz{--vl:#bcd6f5;--va:#ffb877;--vs:rgba(255,255,255,.2);--vc:rgba(255,255,255,.13);padding:8px}
+.viz text{font-family:'JetBrains Mono',ui-monospace,monospace}
+.viz-label{font-size:13px;fill:var(--vl);opacity:.75}
+.viz-grid line,.viz-axis{stroke:var(--vc);stroke-width:1}
+.viz-grid line{stroke-dasharray:3 6}
+.sv-turns rect{fill:var(--vs);animation:vPulse 3s ease-in-out infinite}
+.sv-flow circle{fill:var(--va)}
+.sv-rays path{stroke:var(--vc);stroke-width:1;opacity:.5}
+.sv-node{fill:var(--va);filter:drop-shadow(0 0 6px rgba(245,128,37,.55))}
+.sv-link{stroke:var(--vc);stroke-width:2}
+.sv-brace{stroke:var(--vl);stroke-width:2;opacity:.45}
+.sv-grid .vc{fill:var(--vc);animation:vShim 2.6s ease-in-out infinite}
+.viz-area-bad{fill:var(--va);opacity:.14}
+.viz-line-bad{stroke:var(--va);stroke-width:3}
+.viz-line-good{stroke:var(--vl);stroke-width:3}
+.viz-runner{fill:var(--va);filter:drop-shadow(0 0 5px rgba(245,128,37,.55))}
+.viz-dot-good{fill:var(--vl)}
+.mem-mess{stroke:var(--vs);stroke-width:3;stroke-linecap:round;stroke-dasharray:6 8;animation:vDash 6s linear infinite}
+.viz-arrow{stroke:var(--vl);stroke-width:2;opacity:.6}
+.mg-edges line{stroke:var(--vc);stroke-width:2}
+.mg-node{fill:var(--vl);transform-box:fill-box;transform-origin:center;animation:vPop .6s ease-out both}
+.mg-node.accent{fill:var(--va)}
+.rc-query{fill:none;stroke:var(--vl);stroke-width:2}
+.rc-qtext{fill:var(--vl);font-size:12px}
+.rc-lines path{stroke:var(--vc);stroke-width:1.5}
+.rc-cell{fill:none;stroke:var(--vc);stroke-width:2}
+.rc-cell.hit{stroke:var(--va);animation:vGlow 2s ease-in-out infinite}
+.rc-return{fill:var(--va)}
+.sent-wave{stroke:var(--vs);stroke-width:3;stroke-linecap:round}
+.sent-peak{stroke:var(--va);stroke-width:3;stroke-linecap:round}
+.sent-runner{fill:var(--va);filter:drop-shadow(0 0 5px rgba(245,128,37,.55))}
+.ma-edges line{stroke:var(--vc);stroke-width:2}
+.ma-node{fill:var(--vl);transform-box:fill-box;transform-origin:center;animation:vPulse 2.4s ease-in-out infinite}
+.ma-core{fill:var(--va)}
+.ma-pulse{fill:none;stroke:var(--va);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:maPulse 2.6s ease-out infinite}
+.vault-shield{stroke:var(--vl);stroke-width:2.5;opacity:.5}
+.vault-pulse{stroke:var(--va);stroke-width:2;stroke-dasharray:680;stroke-dashoffset:680;animation:vDraw 3.4s ease-in-out infinite}
+.vault-cells .vc{fill:var(--vc);animation:vShim 2.6s ease-in-out infinite}
+.vault-lock{fill:none;stroke:var(--vl);stroke-width:2}
+.vault-arc{stroke:var(--vl);stroke-width:2}
+@keyframes vPulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes vShim{0%,100%{opacity:.4}50%{opacity:.95}}
+@keyframes svFlow{0%{transform:translateX(0);opacity:0}12%{opacity:1}82%{opacity:1}100%{transform:translateX(112px);opacity:0}}
+@keyframes vDash{to{stroke-dashoffset:-140}}
+@keyframes vPop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes vGlow{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes maPulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(3.4);opacity:0}}
+@keyframes vDraw{0%{stroke-dashoffset:680}60%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.sv-flow circle,.viz-runner,.sent-runner,.rc-return,.ma-pulse,.vault-pulse,.mem-mess{animation:none}}
+/* hero/subhero panels host light-stroke diagrams on dark */
+.hero-img,.subhero-img{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.hero-img::after{display:none}
+/* ===== contact form ===== */
+.section.contact{background:var(--tint)}
+.contact-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;align-items:start;max-width:1000px;margin:0 auto}
+@media(max-width:880px){.contact-grid{grid-template-columns:1fr;gap:30px}}
+.contact-copy .lead{margin:16px 0 22px}
+.contact-list{gap:10px;margin-bottom:20px}.contact-list li{font-size:.96rem}
+.contact-alt{font-size:.92rem;color:var(--muted)}.contact-alt a{color:var(--blue);font-weight:600}
+.contact-form{background:#fff;border:1px solid var(--border);border-radius:20px;padding:28px;box-shadow:0 20px 60px rgba(16,42,76,.1);display:flex;flex-direction:column;gap:14px}
+.contact-form label{display:flex;flex-direction:column;gap:6px;font-size:.84rem;font-weight:600;color:var(--ink)}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.cf-row{grid-template-columns:1fr}}
+.contact-form input,.contact-form select,.contact-form textarea{font-family:inherit;font-size:.95rem;padding:11px 13px;border:1px solid var(--border);border-radius:10px;color:var(--ink);background:#fff;width:100%}
+.contact-form input:focus,.contact-form select:focus,.contact-form textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.cf-consent{flex-direction:row;align-items:flex-start;gap:9px;font-weight:400;font-size:.82rem;color:var(--muted)}
+.cf-consent input{width:auto;margin-top:3px}
+.contact-form .btn{justify-content:center;margin-top:4px}
+.cf-ok{color:#1a7f4b;font-weight:600;font-size:.95rem;text-align:center}
+/* ===== developed case study ===== */
+.cs2{background:#fff;border:1px solid var(--border);border-radius:22px;padding:32px;box-shadow:0 18px 50px rgba(16,42,76,.1)}
+.cs2-top{display:grid;grid-template-columns:170px 1fr;gap:26px;align-items:center;margin-bottom:24px}
+.cs2-viz{border:1px solid var(--border);border-radius:14px;background:var(--tint);overflow:hidden;aspect-ratio:4/3}
+.cs2-title{font-size:clamp(1.4rem,2.6vw,1.85rem);margin-top:8px}
+.cs2-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+@media(max-width:760px){.cs2-top{grid-template-columns:1fr}.cs2-grid{grid-template-columns:1fr;gap:16px}}
+.cs2 .l{font-weight:700;color:var(--blue);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px}
+.cs2-col p,.cs2-result p{font-size:.96rem;color:var(--muted);line-height:1.6}
+.cs2-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;padding:22px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+@media(max-width:620px){.cs2-metrics{grid-template-columns:1fr}}
+.cs2-metric{text-align:center}
+.cs2-v{font-family:'Sora',sans-serif;font-weight:800;font-size:1.9rem;background:linear-gradient(135deg,#1a4f8a,#2f74c0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;line-height:1}
+.cs2-ml{font-size:.82rem;color:var(--muted);margin-top:6px}
+.cs2-result{background:var(--blue-soft);border-radius:12px;padding:16px 18px;margin-bottom:22px}
+.cs2-quote{font-family:'Sora',sans-serif;font-size:1.15rem;font-weight:600;color:var(--ink);line-height:1.5;border-left:3px solid var(--orange);padding-left:18px}
+.cs2-quote cite{display:block;font-family:'Inter',sans-serif;font-size:.85rem;font-weight:500;color:var(--muted);font-style:normal;margin-top:8px}
+/* ===== mobile optimization ===== */
+.nav-burger{display:none;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--blue);cursor:pointer}
+@media(max-width:880px){.hero-img{order:0}.hero-grid{gap:26px}.hero-img .viz{max-height:260px}.subhero-img .viz{max-height:240px}}
+@media(max-width:920px){
+.nav-burger{display:inline-flex}
+.nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:rgba(255,255,255,.98);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:8px 24px 16px;box-shadow:0 20px 40px rgba(16,42,76,.12)}
+.nav.open .nav-links{display:flex}
+.nav-links a{padding:13px 2px;border-top:1px solid var(--border);font-size:1rem}
+.nav-links a:first-child{border-top:none}
+}
+@media(max-width:680px){
+.wrap{padding:0 18px}
+.section{padding:56px 0}.section.tight{padding:42px 0}
+.hero{padding:54px 0 68px}
+.section-head{margin-bottom:32px}.section-head p{font-size:1rem}
+.cmp{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cmp table{min-width:480px}
+.cmp th,.cmp td{padding:12px 12px;font-size:.86rem}
+.cs2{padding:20px}.cs2-top{grid-template-columns:1fr}
+.contact-form{padding:20px}
+.calc-out .big{font-size:2.1rem}
+}
+@media(max-width:560px){
+.nav-inner{height:58px}
+.nav-cta{padding:10px 16px;font-size:.88rem}
+.brand{font-size:1.06rem}
+.hero-cta{flex-direction:column;align-items:stretch;gap:11px;width:100%}
+.hero-cta .btn{width:100%;justify-content:center}
+.hero-trust{flex-direction:column;align-items:stretch;gap:12px}
+.hero-trust .pip{width:100%;justify-content:center}
+.cta-row{flex-direction:column;align-items:stretch}
+.cta-row .btn,.cta-row .pip{width:100%;justify-content:center}
+.related{flex-direction:column}.related a{text-align:center}
+}
+/* ===== dark premium nav (blends with hero, clean over light sections) ===== */
+.nav{background:rgba(9,16,33,.82);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+.brand{color:#fff}
+.nav-links a{color:rgba(255,255,255,.72)}
+.nav-links a:hover{color:#fff}
+.lang{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+.lang a,.lang span{color:rgba(255,255,255,.72)}
+.lang .on{background:#fff;color:#0a1628}
+.nav-burger{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+@media(max-width:920px){
+.nav-links{background:rgba(9,16,33,.98);border-bottom-color:rgba(255,255,255,.1)}
+.nav-links a{border-top-color:rgba(255,255,255,.12)}
+}
+</style>
+</head>
+<body>
+<div data-langroot="en" style="display:none"><header class="nav"><div class="wrap nav-inner">
+<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<nav class="nav-links">
+<a href="index.html#capabilities">Capabilities</a>
+<a href="index.html#usecases">Use cases</a>
+<a href="index.html#industries">Industries</a>
+<a href="index.html#pricing">Pricing</a>
+<a href="index.html#faq">FAQ</a>
+</nav>
+<div class="nav-right"><span class="lang"><span class="on">EN</span><a onclick="semvecSetLang('de')">DE</a></span><a class="btn btn-primary nav-cta" href="#contact">Contact</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+</div></header><section class="hero" id="top"><div class="wrap hero-grid">
+<div>
+<p class="eyebrow fade d1">LLM AGENT MEMORY · mem0 & Letta alternative</p>
+<h1 class="fade d1">Give your AI a memory. <span class="grad">Not a runaway bill.</span></h1>
+<p class="lead fade d2">Most chatbots remember by re-sending the whole conversation every turn, so the longer they talk, the more you pay. Semvec keeps a small, fixed-size memory instead. Same memory, flat cost, one line of code.</p>
+<div class="hero-cta fade d3"><a class="btn btn-primary" href="#contact">Contact sales</a><a class="btn btn-ghost" href="#calculator">Calculate your savings</a></div>
+<div class="hero-trust fade d4"><span class="pip"><span class="d">$</span>pip install semvec</span><span>Rust core · Python API · no telemetry · runs on your servers</span></div>
+</div>
+<div class="hero-img fade d2"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="sv-turns"><rect x="16" y="60" width="120" height="9" rx="4.5" style="animation-delay:0.00s"/><rect x="16" y="88" width="90" height="9" rx="4.5" style="animation-delay:0.20s"/><rect x="16" y="116" width="60" height="9" rx="4.5" style="animation-delay:0.40s"/><rect x="16" y="144" width="120" height="9" rx="4.5" style="animation-delay:0.60s"/><rect x="16" y="172" width="90" height="9" rx="4.5" style="animation-delay:0.80s"/><rect x="16" y="200" width="60" height="9" rx="4.5" style="animation-delay:1.00s"/></g>
+<g class="sv-rays"><path d="M148,64 L206,150" fill="none"/><path d="M148,92 L206,150" fill="none"/><path d="M148,120 L206,150" fill="none"/><path d="M148,148 L206,150" fill="none"/><path d="M148,176 L206,150" fill="none"/><path d="M148,204 L206,150" fill="none"/></g>
+<g class="sv-flow"><circle r="2.6" cx="148" cy="64"><animateMotion dur="2.2s" begin="0.00s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,86"/></circle><circle r="2.6" cx="148" cy="92"><animateMotion dur="2.2s" begin="0.28s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,58"/></circle><circle r="2.6" cx="148" cy="120"><animateMotion dur="2.2s" begin="0.56s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,30"/></circle><circle r="2.6" cx="148" cy="148"><animateMotion dur="2.2s" begin="0.84s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,2"/></circle><circle r="2.6" cx="148" cy="176"><animateMotion dur="2.2s" begin="1.12s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,-26"/></circle><circle r="2.6" cx="148" cy="204"><animateMotion dur="2.2s" begin="1.40s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,-54"/></circle></g>
+<circle class="sv-node" cx="206" cy="150" r="7"/>
+<line class="sv-link" x1="213" y1="150" x2="252" y2="150"/>
+<path class="sv-brace" d="M256,106 q-8,0 -8,8 v92 q0,8 8,8" fill="none"/>
+<g class="sv-grid" transform="translate(264,108)"><rect class="vc" x="0" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="18" y="0" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="36" y="0" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="54" y="0" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="72" y="0" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="90" y="0" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="108" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="18" y="18" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="36" y="18" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="54" y="18" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="72" y="18" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="90" y="18" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="108" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="0" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="18" y="36" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="36" y="36" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="54" y="36" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="72" y="36" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="90" y="36" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="108" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="0" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="18" y="54" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="36" y="54" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="54" y="54" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="72" y="54" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="90" y="54" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="108" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="0" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="18" y="72" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="36" y="72" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="54" y="72" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="72" y="72" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="90" y="72" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="108" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="18" y="90" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="36" y="90" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="54" y="90" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="72" y="90" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="90" y="90" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="108" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/></g>
+<text class="viz-label" x="320" y="234" text-anchor="middle">O(1) state</text></svg></div></div>
+</div></section><section class="stats"><div class="stat"><div class="stat-num">O(1)</div><div class="stat-lbl">cost per turn, it never grows</div></div><div class="stat"><div class="stat-num">~93<span class="u">%</span></div><div class="stat-lbl">fewer tokens you pay for</div></div><div class="stat"><div class="stat-num">0</div><div class="stat-lbl">extra AI calls to remember</div></div><div class="stat"><div class="stat-num">~8<span class="u">×</span></div><div class="stat-lbl">faster to replay a chat</div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">THE PROBLEM</p><h2>Why a chatbot’s bill explodes</h2><p>Tokens are the text your app sends to and from the AI, and what you’re billed for. To “remember”, most tools re-send the entire chat on every single message. By turn 100 that’s a huge prompt, paid for again and again.</p></div><div class="costchart">
+<div class="cc-legend"><span class="cc-key"><i class="k-bad"></i>Normal chatbot, cost climbs</span><span class="cc-key"><i class="k-good"></i>Semvec, stays flat</span></div>
+<svg class="cc-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cost climbs every turn for a normal chatbot but stays flat with Semvec">
+<defs>
+<linearGradient id="ccBad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f58025" stop-opacity=".34"/><stop offset="1" stop-color="#f58025" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccGood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f74c0" stop-opacity=".26"/><stop offset="1" stop-color="#2f74c0" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7a24f"/><stop offset="1" stop-color="#e2551a"/></linearGradient>
+</defs>
+<g class="cc-grid"><line x1="50" y1="270" x2="650" y2="270"/><line x1="50" y1="210" x2="650" y2="210"/><line x1="50" y1="150" x2="650" y2="150"/><line x1="50" y1="90" x2="650" y2="90"/><line x1="50" y1="30" x2="650" y2="30"/></g>
+<path class="cc-area" d="M50,256 C250,250 380,150 650,30 L650,270 L50,270 Z" fill="url(#ccBad)"/>
+<path class="cc-area" d="M50,256 L650,254 L650,270 L50,270 Z" fill="url(#ccGood)"/>
+<path class="cc-line ln-bad" d="M50,256 C250,250 380,150 650,30" fill="none" stroke="url(#ccLine)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="cc-line ln-good" d="M50,256 L650,254" fill="none" stroke="#1a4f8a" stroke-width="3.5" stroke-linecap="round"/>
+<text class="cc-savings" x="300" y="120">what Semvec saves you</text>
+<circle class="cc-runner" r="6" fill="#f58025"><animateMotion dur="3.2s" repeatCount="indefinite" path="M50,256 C250,250 380,150 650,30"/></circle>
+<circle cx="650" cy="30" r="6" fill="#e2551a" stroke="#fff" stroke-width="2"/>
+<circle cx="650" cy="254" r="6" fill="#1a4f8a" stroke="#fff" stroke-width="2"/>
+<circle class="cc-pulse" cx="650" cy="254" r="6" fill="none" stroke="#1a4f8a" stroke-width="2"/>
+<g class="cc-xlab"><text x="50" y="290">Turn 1</text><text x="347" y="290" text-anchor="middle">Turn 50</text><text x="650" y="290" text-anchor="end">Turn 100</text></g>
+<text class="cc-ylab" x="20" y="150" transform="rotate(-90 20 150)" text-anchor="middle">cost / message</text>
+</svg>
+<p class="cc-caption">A normal chatbot re-sends the whole conversation every turn, so cost climbs and climbs. Semvec sends one small memory note, so it stays flat, no matter how long the chat.</p>
+</div></div></section><section class="section tint" id="calculator"><div class="wrap"><div class="section-head"><p class="eyebrow">COST CALCULATOR</p><h2>See what you could save</h2><p>Move the numbers to match your product.</p></div><div class="calc">
+<div class="calc-in">
+<div class="calc-field"><label>Conversations per month</label><input type="number" class="c-n" value="50000" min="0"></div>
+<div class="calc-field"><label>Average turns per conversation</label><input type="number" class="c-t" value="20" min="1"></div>
+<div class="calc-field"><label>Context tokens re-read per turn (no memory layer)</label><input type="number" class="c-c" value="8000" min="0"></div>
+<div class="calc-field"><label>Price per 1M tokens (€)</label><input type="number" class="c-p" value="5" min="0" step="0.5"></div>
+</div>
+<div class="calc-out">
+<div class="lbl">Estimated savings with Semvec</div>
+<div class="big"><span class="c-year">€0</span> <span class="u">/ year</span></div>
+<div class="row"><span>Reader tokens / month, today</span><b class="c-before">0</b></div>
+<div class="row"><span>With Semvec (~93% less)</span><b class="c-after">0</b></div>
+<div class="row"><span>Saved / month</span><b class="c-month">€0</b></div>
+</div></div>
+<p class="calc-note">Rough estimate using Semvec’s measured ~93% reduction in reader-context tokens (LOCOMO conv-44). Your model provider’s token pricing applies.</p></div></section><section class="section" id="capabilities"><div class="wrap"><div class="section-head"><p class="eyebrow">WHAT SEMVEC DOES FOR YOU</p><h2>Four things, in plain terms</h2><p>Each one solves a problem you can feel in your bill, your latency or your compliance review.</p></div>
+<div class="grid4">
+<a class="lcard cap" href="cap-token-savings.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="viz-grid"><line x1="40" y1="60" x2="370" y2="60"/><line x1="40" y1="110" x2="370" y2="110"/><line x1="40" y1="160" x2="370" y2="160"/><line x1="40" y1="210" x2="370" y2="210"/><line x1="40" y1="250" x2="370" y2="250"/></g>
+<path class="viz-area-bad" d="M40,244 C170,240 250,150 370,55 L370,250 Z"/>
+<path class="viz-line-bad cc-line" d="M40,244 C170,240 250,150 370,55" fill="none"/>
+<line class="viz-line-good" x1="40" y1="244" x2="370" y2="243"/>
+<circle class="viz-runner" r="5"><animateMotion dur="3s" repeatCount="indefinite" path="M40,244 C170,240 250,150 370,55"/></circle>
+<circle class="viz-dot-good" cx="370" cy="243" r="5"/>
+<text class="viz-label" x="200" y="120" text-anchor="middle">O(1) vs O(n)</text></svg></div><span class="cap-chip">~93% fewer tokens</span></div><div class="lcard-in"><h3>Save tokens & money</h3><p>Up to ~93% fewer tokens and flat cost per turn, no matter how long the chat.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Flat O(1) cost per turn</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Zero extra AI calls to remember</li></ul><span class="more">Learn more →</span></div></a>
+<a class="lcard cap" href="cap-memory-structure.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<path class="mem-mess" d="M30,150 C70,80 100,210 120,120 C140,60 80,70 70,150 C60,210 130,200 140,150 C150,100 90,110 100,170" fill="none"/>
+<path class="viz-arrow" d="M178,150 h26 m-8,-6 l8,6 -8,6" fill="none"/>
+<g class="mem-graph" transform="translate(228,70)">
+<g class="mg-edges"><line x1="60" y1="0" x2="0" y2="60"/><line x1="60" y1="0" x2="120" y2="60"/><line x1="0" y1="60" x2="40" y2="130"/><line x1="120" y1="60" x2="100" y2="130"/><line x1="40" y1="130" x2="100" y2="130"/></g>
+<circle class="mg-node accent" cx="60" cy="0" r="11" style="animation-delay:0.00s"/><circle class="mg-node" cx="0" cy="60" r="11" style="animation-delay:0.18s"/><circle class="mg-node" cx="120" cy="60" r="11" style="animation-delay:0.36s"/><circle class="mg-node" cx="40" cy="130" r="11" style="animation-delay:0.54s"/><circle class="mg-node" cx="100" cy="130" r="11" style="animation-delay:0.72s"/>
+</g></svg></div><span class="cap-chip">structured recall</span></div><div class="lcard-in"><h3>Organized memory</h3><p>Turns messy chat logs into a clean structure your agent can actually reason over.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Keeps names, decisions, IDs</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Exact IBANs, amounts, dates</li></ul><span class="more">Learn more →</span></div></a>
+<a class="lcard cap" href="cap-language-understanding.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<rect class="rc-query" x="22" y="134" width="96" height="32" rx="16"/>
+<text class="rc-qtext" x="70" y="155" text-anchor="middle">last refund?</text>
+<g class="rc-lines"><path d="M122,150 C180,150 210,80 268,80" fill="none"/><path d="M122,150 C180,150 210,130 268,130" fill="none"/><path d="M122,150 C180,150 210,180 268,180" fill="none"/><path d="M122,150 C180,150 210,230 268,230" fill="none"/></g>
+<g class="rc-cells"><rect class="rc-cell" x="270" y="65" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="115" width="104" height="30" rx="8"/><rect class="rc-cell hit" x="270" y="165" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="215" width="104" height="30" rx="8"/></g>
+<circle class="rc-return" r="4"><animateMotion dur="2.8s" repeatCount="indefinite" path="M322,180 C210,180 180,150 122,150"/></circle></svg></div><span class="cap-chip">meaning, not keywords</span></div><div class="lcard-in"><h3>Understands meaning</h3><p>Recalls by what people mean, “the refund from last week”, not exact keywords.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Recalls by intent</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Works across languages</li></ul><span class="more">Learn more →</span></div></a>
+<a class="lcard cap" href="cap-tone-analysis.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<line class="viz-axis" x1="30" y1="150" x2="370" y2="150"/>
+<path class="sent-wave" d="M30,150 C70,150 80,108 110,108 S150,150 180,150 210,150 240,150 270,150 300,150 360,150 370,150" fill="none"/>
+<path class="sent-peak" d="M180,150 C205,150 215,74 245,74 C275,74 285,150 310,150" fill="none"/>
+<circle class="sent-runner" r="5"><animateMotion dur="3.4s" repeatCount="indefinite" path="M180,150 C205,150 215,74 245,74 C275,74 285,150 310,150"/></circle>
+<text class="viz-label" x="245" y="58" text-anchor="middle"></text></svg></div><span class="cap-chip">sentiment-aware</span></div><div class="lcard-in"><h3>Reads the mood</h3><p>Tracks tone and sentiment, knows when a customer is frustrated or a VIP.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Spots rising frustration</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Remembers VIP preferences</li></ul><span class="more">Learn more →</span></div></a>
+</div></div></section><section class="section tint" id="usecases"><div class="wrap"><div class="section-head"><p class="eyebrow">USE CASES</p><h2>Where teams put Semvec to work</h2></div>
+<div class="uc"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<rect class="rc-query" x="22" y="134" width="96" height="32" rx="16"/>
+<text class="rc-qtext" x="70" y="155" text-anchor="middle">last refund?</text>
+<g class="rc-lines"><path d="M122,150 C180,150 210,80 268,80" fill="none"/><path d="M122,150 C180,150 210,130 268,130" fill="none"/><path d="M122,150 C180,150 210,180 268,180" fill="none"/><path d="M122,150 C180,150 210,230 268,230" fill="none"/></g>
+<g class="rc-cells"><rect class="rc-cell" x="270" y="65" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="115" width="104" height="30" rx="8"/><rect class="rc-cell hit" x="270" y="165" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="215" width="104" height="30" rx="8"/></g>
+<circle class="rc-return" r="4"><animateMotion dur="2.8s" repeatCount="indefinite" path="M322,180 C210,180 180,150 122,150"/></circle></svg></div></div><div class="uc-body"><span class="uc-tag">Support & sales</span><h3>Copilots that remember every customer</h3><p>Past tickets, preferences and decisions stay available across sessions, without re-sending the whole history. Names, amounts and dates are kept exact.</p></div></div>
+<div class="uc rev"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="ma-edges"><line x1="200" y1="150" x2="200" y2="56"/><line x1="200" y1="150" x2="305" y2="112"/><line x1="200" y1="150" x2="288" y2="214"/><line x1="200" y1="150" x2="112" y2="214"/><line x1="200" y1="150" x2="95" y2="112"/></g>
+<circle class="ma-pulse" cx="200" cy="150" r="20"/>
+<circle class="ma-node" cx="200" cy="56" r="13" style="animation-delay:0.00s"/><circle class="ma-node" cx="305" cy="112" r="13" style="animation-delay:0.30s"/><circle class="ma-node" cx="288" cy="214" r="13" style="animation-delay:0.60s"/><circle class="ma-node" cx="112" cy="214" r="13" style="animation-delay:0.90s"/><circle class="ma-node" cx="95" cy="112" r="13" style="animation-delay:1.20s"/>
+<circle class="ma-core" cx="200" cy="150" r="17"/></svg></div></div><div class="uc-body"><span class="uc-tag">Multi-agent</span><h3>One agent learns, the whole fleet knows</h3><p>Share one memory across many agents with consensus voting and drift detection, instead of every agent relearning the same lessons.</p></div></div>
+<div class="uc"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="viz-grid"><line x1="40" y1="60" x2="370" y2="60"/><line x1="40" y1="110" x2="370" y2="110"/><line x1="40" y1="160" x2="370" y2="160"/><line x1="40" y1="210" x2="370" y2="210"/><line x1="40" y1="250" x2="370" y2="250"/></g>
+<path class="viz-area-bad" d="M40,244 C170,240 250,150 370,55 L370,250 Z"/>
+<path class="viz-line-bad cc-line" d="M40,244 C170,240 250,150 370,55" fill="none"/>
+<line class="viz-line-good" x1="40" y1="244" x2="370" y2="243"/>
+<circle class="viz-runner" r="5"><animateMotion dur="3s" repeatCount="indefinite" path="M40,244 C170,240 250,150 370,55"/></circle>
+<circle class="viz-dot-good" cx="370" cy="243" r="5"/>
+<text class="viz-label" x="200" y="120" text-anchor="middle">O(1) vs O(n)</text></svg></div></div><div class="uc-body"><span class="uc-tag">High volume</span><h3>Flat cost at millions of conversations</h3><p>When you run millions of chats, the per-turn memory cost decides your margin. With Semvec it never grows, turn 10 costs the same as turn 10,000.</p></div></div>
+<div class="uc rev"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<path class="vault-shield" d="M200,42 L318,82 V160 C318,224 264,253 200,272 C136,253 82,224 82,160 V82 Z" fill="none"/>
+<path class="vault-pulse" d="M200,42 L318,82 V160 C318,224 264,253 200,272 C136,253 82,224 82,160 V82 Z" fill="none"/>
+<g class="vault-cells" transform="translate(150,108)"><rect class="vc" x="0" y="0" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="22" y="0" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="44" y="0" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="66" y="0" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="88" y="0" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="22" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="22" y="22" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="44" y="22" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="66" y="22" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="88" y="22" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="0" y="44" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="22" y="44" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="44" y="44" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="66" y="44" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="88" y="44" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="66" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="22" y="66" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="44" y="66" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="66" y="66" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="88" y="66" width="16" height="16" rx="2" style="animation-delay:0.18s"/></g>
+<rect class="vault-lock" x="184" y="150" width="32" height="24" rx="5"/>
+<path class="vault-arc" d="M190,150 v-8 a10,10 0 0 1 20,0 v8" fill="none"/></svg></div></div><div class="uc-body"><span class="uc-tag">Regulated & EU</span><h3>Your data never leaves your servers</h3><p>Runs inside your own systems with no telemetry. GDPR Article 17 deletion with signed certificates and audit logs. Built in Munich.</p></div></div>
+</div></section><section class="section" id="industries"><div class="wrap"><div class="section-head"><p class="eyebrow">INDUSTRIES</p><h2>Built for real industries</h2></div>
+<div class="grid4">
+<a class="lcard icononly" href="industry-fintech.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div><div class="lcard-in"><h3>Financial services</h3><p>Exact numbers, auditable, data stays in-house.</p><span class="more">See the case study →</span></div></a>
+<a class="lcard icononly" href="industry-saas-dev.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><div class="lcard-in"><h3>SaaS & dev tools</h3><p>Agent fleets, dev copilots, reproducible runs.</p><span class="more">See the case study →</span></div></a>
+<a class="lcard icononly" href="industry-cx-support.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16 6a3 3 0 0 1 0 6M22 20c0-2.4-1.6-4.3-4-4.8"/></svg></div><div class="lcard-in"><h3>Customer support</h3><p>Remember every customer at huge volume.</p><span class="more">See the case study →</span></div></a>
+<a class="lcard icononly" href="industry-healthcare.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="lcard-in"><h3>Healthcare & public</h3><p>Privacy-critical, on-prem, fully auditable.</p><span class="more">See the case study →</span></div></a>
+</div></div></section><section class="section dark"><div class="wrap"><div class="section-head"><p class="eyebrow">COMPARISON</p><h2>Same job. Different cost class.</h2><p>A drop-in alternative to mem0 and Letta, side by side.</p></div>
+<div class="cmp"><table><thead><tr><th></th><th>mem0</th><th class="sv">Semvec</th></tr></thead><tbody>
+<tr><td class="feat">Extra AI calls to save memory</td><td>dozens per turn</td><td class="sv">0</td></tr>
+<tr><td class="feat">Cost as the chat grows</td><td>keeps rising</td><td class="sv">stays flat, O(1)</td></tr>
+<tr><td class="feat">Tokens you pay for</td><td>baseline</td><td class="sv">~93% fewer</td></tr>
+<tr><td class="feat">Reproducible for audits</td><td>no</td><td class="sv">yes, bit-exact replay</td></tr>
+<tr><td class="feat">Where your data lives</td><td>via external AI</td><td class="sv">your own servers</td></tr>
+</tbody></table></div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">ENGINEERING & TRUST</p><h2>Built for production and for audits</h2></div><div class="cards">
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg></div><h3>Reproducible</h3><p>Replay any conversation bit-for-bit from a saved file, for audits, CI and debugging.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Private by design</h3><p>Runs in your systems, sends no telemetry, checks its licence locally. Your data never leaves.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div><h3>GDPR Article 17</h3><p>Verified deletion with signed certificates and tamper-evident audit logs.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><h3>Fast & light</h3><p>Rust core, Python API, sub-millisecond updates on a normal CPU. pip install semvec.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div><h3>Works with your tools</h3><p>Built-in MCP server for Claude Code and Cursor, loads and saves context automatically.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div><h3>Made in Munich</h3><p>Versino PsiOmega GmbH. European patent application 25 188 105.8.</p></div>
+</div></div></section><section class="section tint" id="pricing"><div class="wrap"><div class="section-head"><p class="eyebrow">PRICING</p><h2>Start free. Scale when ready.</h2></div>
+<div class="pricing">
+<div class="price-card"><div class="price-name">Community</div><div class="price-amt">Free</div><ul class="price-list"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>5 QPS / 50 burst</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>No registration</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Linux, macOS, Windows</li></ul><a class="btn btn-outline" href="https://pypi.org/project/semvec/" target="_blank" rel="noopener">pip install semvec</a></div>
+<div class="price-card feat" data-badge="Most popular"><div class="price-name">Pro</div><div class="price-amt">On request</div><ul class="price-list"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Higher rate limits</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Advanced retrieval modes</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Local licence</li></ul><a class="btn btn-primary" href="#contact">Contact sales</a></div>
+<div class="price-card"><div class="price-name">Enterprise</div><div class="price-amt">On request</div><ul class="price-list"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Extended rate limits</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>All retrieval modes</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Priority support</li></ul><a class="btn btn-outline" href="#contact">Contact sales</a></div>
+</div><p class="price-note">Prices via vertrieb@versino.de. Licences verified locally, no phone-home.</p></div></section><section class="section" id="faq"><div class="wrap"><div class="section-head"><p class="eyebrow">FAQ</p><h2>Questions before you start</h2><p>The things teams ask us most before switching. Still unsure? We’re happy to walk you through it.</p></div><div class="faq">
+<div class="faq-item"><h3>How hard is it to switch from mem0 or Letta?</h3><p>Easy. Semvec is a drop-in with a simple Python API (add / search) and a one-line install. Most teams swap their memory calls in an afternoon, and we’ll walk you through it.</p></div>
+<div class="faq-item"><h3>Will I lose memory quality to save money?</h3><p>No meaningful loss. Semvec scores comparably to mem0 on the LOCOMO benchmark (0.597 vs 0.669) while using ~93% fewer tokens and replaying ~8× faster. You keep the recall, you drop the bill.</p></div>
+<div class="faq-item"><h3>How quickly will I see the savings?</h3><p>From the very first turn, your app stops re-sending the whole history. Use the calculator above to estimate your monthly saving, then pip install semvec and start free today.</p></div>
+<div class="faq-item"><h3>Is my customer data safe?</h3><p>Yes. Semvec runs in-process on your own servers, sends no telemetry and checks its licence locally, conversation content never leaves your machines. That keeps GDPR and procurement reviews short.</p></div>
+<div class="faq-item"><h3>What do I need to run it?</h3><p>Just pip install semvec. The Rust core ships with the Python package and runs on a normal CPU, no GPU, no separate service. Wheels for Linux, macOS and Windows. It also plugs into Claude Code and Cursor via a built-in MCP server.</p></div>
+<div class="faq-item"><h3>What does it cost?</h3><p>Start free on the Community tier, no registration. Pro and Enterprise add higher rate limits, advanced retrieval and support; prices on request via vertrieb@versino.de. No surprise usage fees: licences are verified locally.</p></div>
+</div>
+<div class="center" style="margin-top:34px"><p style="margin-bottom:16px;font-size:1.02rem">Still have a question?</p><a class="btn btn-primary" href="#contact">Talk to us</a> <a class="btn btn-outline" href="#calculator">Estimate your savings</a></div>
+</div></section><section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
+<div class="contact-copy">
+<p class="eyebrow">GET STARTED</p>
+<h2>See Semvec on your numbers</h2>
+<p class="lead">Tell us your use case and volume. We will come back, usually within one working day, with a tailored token-savings estimate and a clear path to production.</p>
+<ul class="flist contact-list">
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>A savings estimate on your real volume</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>A 30-minute technical walkthrough</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Runs on your own infrastructure, GDPR-ready</span></li>
+</ul>
+<p class="contact-alt">Prefer email? <a href="mailto:vertrieb@versino.de">vertrieb@versino.de</a></p>
+</div>
+<form class="contact-form" onsubmit="return semvecSubmit(this)">
+<div class="cf-row"><label>Name<input name="name" required></label><label>Work email<input type="email" name="email" required></label></div>
+<label>Company<input name="company"></label>
+<div class="cf-row"><label>Use case<select name="usecase"><option>Support copilot</option><option>Autonomous agents</option><option>High-volume chat</option><option>Regulated / on-prem</option><option>Other</option></select></label>
+<label>Conversations / month<select name="volume"><option>under 10k</option><option>10k to 100k</option><option>100k to 1M</option><option>1M+</option></select></label></div>
+<label>What are you building?<textarea name="message" rows="3"></textarea></label>
+<label class="cf-consent"><input type="checkbox" required> I agree to be contacted about Semvec.</label>
+<button class="btn btn-primary" type="submit">Request my savings estimate →</button>
+<p class="cf-ok" hidden>Thank you. We will be in touch within one working day.</p>
+</form>
+</div></div></section><section class="cta-band"><div class="wrap">
+<h2>Try it in 60 seconds</h2>
+<p>Free Community tier. No registration. Wheels for Linux, macOS and Windows.</p>
+<div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
+<a class="btn btn-light" href="#contact">Talk to us</a>
+<a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Read the docs</a></div>
+</div></section><footer class="footer"><div class="wrap">
+<div class="foot-grid">
+<div><div class="foot-brand">Semvec</div><p style="color:rgba(255,255,255,.55);max-width:260px">Constant-cost memory for LLM agents. Built by Versino PsiOmega GmbH, München.</p></div>
+<div><h4>Capabilities</h4>
+<a href="cap-token-savings.html">Token & cost savings</a>
+<a href="cap-memory-structure.html">Memory structure</a>
+<a href="cap-language-understanding.html">Language understanding</a>
+<a href="cap-tone-analysis.html">Tone analysis</a></div>
+<div><h4>Industries</h4>
+<a href="industry-fintech.html">Financial services</a>
+<a href="industry-saas-dev.html">SaaS & dev tools</a>
+<a href="industry-cx-support.html">Customer support</a>
+<a href="industry-healthcare.html">Healthcare & public</a></div>
+<div><h4>Solutions</h4>
+<a href="challenge-cut-costs.html">Cut memory costs</a>
+<a href="challenge-auditable-agents.html">Auditable agents</a>
+<a href="challenge-eu-data.html">Keep data in the EU</a>
+<a href="https://www.semvec.io/">Documentation</a></div>
+</div>
+<div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
+</div></footer></div>
+<div data-langroot="de" style="display:none"><header class="nav"><div class="wrap nav-inner">
+<a class="brand" href="index.html"><span class="mark"></span>Semvec</a>
+<nav class="nav-links">
+<a href="index.html#capabilities">Funktionen</a>
+<a href="index.html#usecases">Anwendungsfälle</a>
+<a href="index.html#industries">Branchen</a>
+<a href="index.html#pricing">Preise</a>
+<a href="index.html#faq">FAQ</a>
+</nav>
+<div class="nav-right"><span class="lang"><a onclick="semvecSetLang('en')">EN</a><span class="on">DE</span></span><a class="btn btn-primary nav-cta" href="#contact">Kontakt</a><button class="nav-burger" onclick="semvecToggleMenu(this)" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+</div></header><section class="hero" id="top"><div class="wrap hero-grid">
+<div>
+<p class="eyebrow fade d1">LLM-AGENTEN-SPEICHER · mem0- & Letta-Alternative</p>
+<h1 class="fade d1">Geben Sie Ihrer KI ein Gedächtnis. <span class="grad">Keine explodierende Rechnung.</span></h1>
+<p class="lead fade d2">Die meisten Chatbots merken sich Dinge, indem sie bei jedem Turn das ganze Gespräch erneut senden, je länger, desto teurer. Semvec hält stattdessen ein kleines, konstant großes Gedächtnis. Gleiches Erinnern, flache Kosten, eine Zeile Code.</p>
+<div class="hero-cta fade d3"><a class="btn btn-primary" href="#contact">Kontakt aufnehmen</a><a class="btn btn-ghost" href="#calculator">Ersparnis berechnen</a></div>
+<div class="hero-trust fade d4"><span class="pip"><span class="d">$</span>pip install semvec</span><span>Rust-Kern · Python-API · keine Telemetrie · läuft auf Ihren Servern</span></div>
+</div>
+<div class="hero-img fade d2"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="sv-turns"><rect x="16" y="60" width="120" height="9" rx="4.5" style="animation-delay:0.00s"/><rect x="16" y="88" width="90" height="9" rx="4.5" style="animation-delay:0.20s"/><rect x="16" y="116" width="60" height="9" rx="4.5" style="animation-delay:0.40s"/><rect x="16" y="144" width="120" height="9" rx="4.5" style="animation-delay:0.60s"/><rect x="16" y="172" width="90" height="9" rx="4.5" style="animation-delay:0.80s"/><rect x="16" y="200" width="60" height="9" rx="4.5" style="animation-delay:1.00s"/></g>
+<g class="sv-rays"><path d="M148,64 L206,150" fill="none"/><path d="M148,92 L206,150" fill="none"/><path d="M148,120 L206,150" fill="none"/><path d="M148,148 L206,150" fill="none"/><path d="M148,176 L206,150" fill="none"/><path d="M148,204 L206,150" fill="none"/></g>
+<g class="sv-flow"><circle r="2.6" cx="148" cy="64"><animateMotion dur="2.2s" begin="0.00s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,86"/></circle><circle r="2.6" cx="148" cy="92"><animateMotion dur="2.2s" begin="0.28s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,58"/></circle><circle r="2.6" cx="148" cy="120"><animateMotion dur="2.2s" begin="0.56s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,30"/></circle><circle r="2.6" cx="148" cy="148"><animateMotion dur="2.2s" begin="0.84s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,2"/></circle><circle r="2.6" cx="148" cy="176"><animateMotion dur="2.2s" begin="1.12s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,-26"/></circle><circle r="2.6" cx="148" cy="204"><animateMotion dur="2.2s" begin="1.40s" repeatCount="indefinite" calcMode="linear" keyTimes="0;1" keyPoints="0;1" path="M0,0 L58,-54"/></circle></g>
+<circle class="sv-node" cx="206" cy="150" r="7"/>
+<line class="sv-link" x1="213" y1="150" x2="252" y2="150"/>
+<path class="sv-brace" d="M256,106 q-8,0 -8,8 v92 q0,8 8,8" fill="none"/>
+<g class="sv-grid" transform="translate(264,108)"><rect class="vc" x="0" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="18" y="0" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="36" y="0" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="54" y="0" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="72" y="0" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="90" y="0" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="108" y="0" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="18" y="18" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="36" y="18" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="54" y="18" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="72" y="18" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="90" y="18" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="108" y="18" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="0" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="18" y="36" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="36" y="36" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="54" y="36" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="72" y="36" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="90" y="36" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="108" y="36" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="0" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="18" y="54" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="36" y="54" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="54" y="54" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="72" y="54" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="90" y="54" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="108" y="54" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="0" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="18" y="72" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="36" y="72" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="54" y="72" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="72" y="72" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="90" y="72" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="108" y="72" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="18" y="90" width="14" height="14" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="36" y="90" width="14" height="14" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="54" y="90" width="14" height="14" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="72" y="90" width="14" height="14" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="90" y="90" width="14" height="14" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="108" y="90" width="14" height="14" rx="2" style="animation-delay:0.90s"/></g>
+<text class="viz-label" x="320" y="234" text-anchor="middle">O(1) state</text></svg></div></div>
+</div></section><section class="stats"><div class="stat"><div class="stat-num">O(1)</div><div class="stat-lbl">Kosten pro Turn, wachsen nie</div></div><div class="stat"><div class="stat-num">~93<span class="u">%</span></div><div class="stat-lbl">weniger Tokens, die Sie zahlen</div></div><div class="stat"><div class="stat-num">0</div><div class="stat-lbl">extra KI-Calls fürs Erinnern</div></div><div class="stat"><div class="stat-num">~8<span class="u">×</span></div><div class="stat-lbl">schneller im Replay</div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">DAS PROBLEM</p><h2>Warum die Chatbot-Rechnung explodiert</h2><p>Tokens sind der Text, den Ihre App an die KI sendet und empfängt, und wofür Sie zahlen. Um sich zu „erinnern“, senden die meisten Tools bei jeder Nachricht das ganze Gespräch erneut. Bei Turn 100 ist das ein riesiger Prompt, immer und immer wieder bezahlt.</p></div><div class="costchart">
+<div class="cc-legend"><span class="cc-key"><i class="k-bad"></i>Normaler Chatbot, Kosten steigen</span><span class="cc-key"><i class="k-good"></i>Semvec, bleibt flach</span></div>
+<svg class="cc-svg" viewBox="0 0 680 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Kosten steigen bei einem normalen Chatbot, mit Semvec bleiben sie flach">
+<defs>
+<linearGradient id="ccBad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f58025" stop-opacity=".34"/><stop offset="1" stop-color="#f58025" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccGood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f74c0" stop-opacity=".26"/><stop offset="1" stop-color="#2f74c0" stop-opacity="0"/></linearGradient>
+<linearGradient id="ccLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f7a24f"/><stop offset="1" stop-color="#e2551a"/></linearGradient>
+</defs>
+<g class="cc-grid"><line x1="50" y1="270" x2="650" y2="270"/><line x1="50" y1="210" x2="650" y2="210"/><line x1="50" y1="150" x2="650" y2="150"/><line x1="50" y1="90" x2="650" y2="90"/><line x1="50" y1="30" x2="650" y2="30"/></g>
+<path class="cc-area" d="M50,256 C250,250 380,150 650,30 L650,270 L50,270 Z" fill="url(#ccBad)"/>
+<path class="cc-area" d="M50,256 L650,254 L650,270 L50,270 Z" fill="url(#ccGood)"/>
+<path class="cc-line ln-bad" d="M50,256 C250,250 380,150 650,30" fill="none" stroke="url(#ccLine)" stroke-width="3.5" stroke-linecap="round"/>
+<path class="cc-line ln-good" d="M50,256 L650,254" fill="none" stroke="#1a4f8a" stroke-width="3.5" stroke-linecap="round"/>
+<text class="cc-savings" x="300" y="120">was Semvec spart</text>
+<circle class="cc-runner" r="6" fill="#f58025"><animateMotion dur="3.2s" repeatCount="indefinite" path="M50,256 C250,250 380,150 650,30"/></circle>
+<circle cx="650" cy="30" r="6" fill="#e2551a" stroke="#fff" stroke-width="2"/>
+<circle cx="650" cy="254" r="6" fill="#1a4f8a" stroke="#fff" stroke-width="2"/>
+<circle class="cc-pulse" cx="650" cy="254" r="6" fill="none" stroke="#1a4f8a" stroke-width="2"/>
+<g class="cc-xlab"><text x="50" y="290">Turn 1</text><text x="347" y="290" text-anchor="middle">Turn 50</text><text x="650" y="290" text-anchor="end">Turn 100</text></g>
+<text class="cc-ylab" x="20" y="150" transform="rotate(-90 20 150)" text-anchor="middle">Kosten / Nachricht</text>
+</svg>
+<p class="cc-caption">Ein normaler Chatbot sendet bei jedem Turn das ganze Gespräch erneut, die Kosten steigen und steigen. Semvec sendet eine kleine Gedächtnis-Notiz, sie bleiben flach, egal wie lang der Chat.</p>
+</div></div></section><section class="section tint" id="calculator"><div class="wrap"><div class="section-head"><p class="eyebrow">KOSTENRECHNER</p><h2>Sehen Sie, was Sie sparen könnten</h2><p>Passen Sie die Zahlen an Ihr Produkt an.</p></div><div class="calc">
+<div class="calc-in">
+<div class="calc-field"><label>Gespräche pro Monat</label><input type="number" class="c-n" value="50000" min="0"></div>
+<div class="calc-field"><label>Durchschnittliche Turns pro Gespräch</label><input type="number" class="c-t" value="20" min="1"></div>
+<div class="calc-field"><label>Kontext-Tokens pro Turn (ohne Memory-Layer)</label><input type="number" class="c-c" value="8000" min="0"></div>
+<div class="calc-field"><label>Preis pro 1 Mio. Tokens (€)</label><input type="number" class="c-p" value="5" min="0" step="0.5"></div>
+</div>
+<div class="calc-out">
+<div class="lbl">Geschätzte Ersparnis mit Semvec</div>
+<div class="big"><span class="c-year">€0</span> <span class="u">/ Jahr</span></div>
+<div class="row"><span>Reader-Tokens / Monat, heute</span><b class="c-before">0</b></div>
+<div class="row"><span>Mit Semvec (~93 % weniger)</span><b class="c-after">0</b></div>
+<div class="row"><span>Ersparnis / Monat</span><b class="c-month">€0</b></div>
+</div></div>
+<p class="calc-note">Grobe Schätzung auf Basis der gemessenen ~93 %-Reduktion der Reader-Context-Tokens (LOCOMO conv-44). Es gilt die Token-Preisliste Ihres Modell-Anbieters.</p></div></section><section class="section" id="capabilities"><div class="wrap"><div class="section-head"><p class="eyebrow">WAS SEMVEC FÜR SIE TUT</p><h2>Vier Dinge, einfach erklärt</h2><p>Jedes löst ein Problem, das Sie in Ihrer Rechnung, Ihrer Latenz oder Ihrer Compliance-Prüfung spüren.</p></div>
+<div class="grid4">
+<a class="lcard cap" href="cap-token-savings.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="viz-grid"><line x1="40" y1="60" x2="370" y2="60"/><line x1="40" y1="110" x2="370" y2="110"/><line x1="40" y1="160" x2="370" y2="160"/><line x1="40" y1="210" x2="370" y2="210"/><line x1="40" y1="250" x2="370" y2="250"/></g>
+<path class="viz-area-bad" d="M40,244 C170,240 250,150 370,55 L370,250 Z"/>
+<path class="viz-line-bad cc-line" d="M40,244 C170,240 250,150 370,55" fill="none"/>
+<line class="viz-line-good" x1="40" y1="244" x2="370" y2="243"/>
+<circle class="viz-runner" r="5"><animateMotion dur="3s" repeatCount="indefinite" path="M40,244 C170,240 250,150 370,55"/></circle>
+<circle class="viz-dot-good" cx="370" cy="243" r="5"/>
+<text class="viz-label" x="200" y="120" text-anchor="middle">O(1) vs O(n)</text></svg></div><span class="cap-chip">~93 % weniger Tokens</span></div><div class="lcard-in"><h3>Tokens & Geld sparen</h3><p>Bis zu ~93 % weniger Tokens und flache Kosten pro Turn, egal wie lang der Chat.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Flache O(1)-Kosten pro Turn</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Null extra KI-Calls fürs Erinnern</li></ul><span class="more">Mehr erfahren →</span></div></a>
+<a class="lcard cap" href="cap-memory-structure.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<path class="mem-mess" d="M30,150 C70,80 100,210 120,120 C140,60 80,70 70,150 C60,210 130,200 140,150 C150,100 90,110 100,170" fill="none"/>
+<path class="viz-arrow" d="M178,150 h26 m-8,-6 l8,6 -8,6" fill="none"/>
+<g class="mem-graph" transform="translate(228,70)">
+<g class="mg-edges"><line x1="60" y1="0" x2="0" y2="60"/><line x1="60" y1="0" x2="120" y2="60"/><line x1="0" y1="60" x2="40" y2="130"/><line x1="120" y1="60" x2="100" y2="130"/><line x1="40" y1="130" x2="100" y2="130"/></g>
+<circle class="mg-node accent" cx="60" cy="0" r="11" style="animation-delay:0.00s"/><circle class="mg-node" cx="0" cy="60" r="11" style="animation-delay:0.18s"/><circle class="mg-node" cx="120" cy="60" r="11" style="animation-delay:0.36s"/><circle class="mg-node" cx="40" cy="130" r="11" style="animation-delay:0.54s"/><circle class="mg-node" cx="100" cy="130" r="11" style="animation-delay:0.72s"/>
+</g></svg></div><span class="cap-chip">strukturierter Abruf</span></div><div class="lcard-in"><h3>Organisiertes Gedächtnis</h3><p>Macht aus chaotischen Chat-Logs eine klare Struktur, über die Ihr Agent wirklich nachdenken kann.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Behält Namen, Entscheidungen, IDs</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Exakte IBANs, Beträge, Daten</li></ul><span class="more">Mehr erfahren →</span></div></a>
+<a class="lcard cap" href="cap-language-understanding.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<rect class="rc-query" x="22" y="134" width="96" height="32" rx="16"/>
+<text class="rc-qtext" x="70" y="155" text-anchor="middle">last refund?</text>
+<g class="rc-lines"><path d="M122,150 C180,150 210,80 268,80" fill="none"/><path d="M122,150 C180,150 210,130 268,130" fill="none"/><path d="M122,150 C180,150 210,180 268,180" fill="none"/><path d="M122,150 C180,150 210,230 268,230" fill="none"/></g>
+<g class="rc-cells"><rect class="rc-cell" x="270" y="65" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="115" width="104" height="30" rx="8"/><rect class="rc-cell hit" x="270" y="165" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="215" width="104" height="30" rx="8"/></g>
+<circle class="rc-return" r="4"><animateMotion dur="2.8s" repeatCount="indefinite" path="M322,180 C210,180 180,150 122,150"/></circle></svg></div><span class="cap-chip">Bedeutung, nicht Stichwörter</span></div><div class="lcard-in"><h3>Versteht Bedeutung</h3><p>Erinnert sich an das, was Menschen meinen, „die Erstattung von letzter Woche“, nicht an exakte Stichwörter.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Abruf nach Absicht</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Funktioniert sprachübergreifend</li></ul><span class="more">Mehr erfahren →</span></div></a>
+<a class="lcard cap" href="cap-tone-analysis.html"><div class="thumb"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<line class="viz-axis" x1="30" y1="150" x2="370" y2="150"/>
+<path class="sent-wave" d="M30,150 C70,150 80,108 110,108 S150,150 180,150 210,150 240,150 270,150 300,150 360,150 370,150" fill="none"/>
+<path class="sent-peak" d="M180,150 C205,150 215,74 245,74 C275,74 285,150 310,150" fill="none"/>
+<circle class="sent-runner" r="5"><animateMotion dur="3.4s" repeatCount="indefinite" path="M180,150 C205,150 215,74 245,74 C275,74 285,150 310,150"/></circle>
+<text class="viz-label" x="245" y="58" text-anchor="middle"></text></svg></div><span class="cap-chip">stimmungsbewusst</span></div><div class="lcard-in"><h3>Erkennt die Stimmung</h3><p>Verfolgt Ton und Stimmung, erkennt, wenn ein Kunde frustriert oder ein VIP ist.</p><ul class="cap-points"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Erkennt steigenden Frust</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Merkt sich VIP-Präferenzen</li></ul><span class="more">Mehr erfahren →</span></div></a>
+</div></div></section><section class="section tint" id="usecases"><div class="wrap"><div class="section-head"><p class="eyebrow">ANWENDUNGSFÄLLE</p><h2>Wo Teams Semvec einsetzen</h2></div>
+<div class="uc"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<rect class="rc-query" x="22" y="134" width="96" height="32" rx="16"/>
+<text class="rc-qtext" x="70" y="155" text-anchor="middle">last refund?</text>
+<g class="rc-lines"><path d="M122,150 C180,150 210,80 268,80" fill="none"/><path d="M122,150 C180,150 210,130 268,130" fill="none"/><path d="M122,150 C180,150 210,180 268,180" fill="none"/><path d="M122,150 C180,150 210,230 268,230" fill="none"/></g>
+<g class="rc-cells"><rect class="rc-cell" x="270" y="65" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="115" width="104" height="30" rx="8"/><rect class="rc-cell hit" x="270" y="165" width="104" height="30" rx="8"/><rect class="rc-cell" x="270" y="215" width="104" height="30" rx="8"/></g>
+<circle class="rc-return" r="4"><animateMotion dur="2.8s" repeatCount="indefinite" path="M322,180 C210,180 180,150 122,150"/></circle></svg></div></div><div class="uc-body"><span class="uc-tag">Support & Sales</span><h3>Copiloten, die sich an jeden Kunden erinnern</h3><p>Frühere Tickets, Präferenzen und Entscheidungen bleiben über Sitzungen hinweg verfügbar, ohne die ganze Historie erneut zu senden. Namen, Beträge und Daten bleiben exakt.</p></div></div>
+<div class="uc rev"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="ma-edges"><line x1="200" y1="150" x2="200" y2="56"/><line x1="200" y1="150" x2="305" y2="112"/><line x1="200" y1="150" x2="288" y2="214"/><line x1="200" y1="150" x2="112" y2="214"/><line x1="200" y1="150" x2="95" y2="112"/></g>
+<circle class="ma-pulse" cx="200" cy="150" r="20"/>
+<circle class="ma-node" cx="200" cy="56" r="13" style="animation-delay:0.00s"/><circle class="ma-node" cx="305" cy="112" r="13" style="animation-delay:0.30s"/><circle class="ma-node" cx="288" cy="214" r="13" style="animation-delay:0.60s"/><circle class="ma-node" cx="112" cy="214" r="13" style="animation-delay:0.90s"/><circle class="ma-node" cx="95" cy="112" r="13" style="animation-delay:1.20s"/>
+<circle class="ma-core" cx="200" cy="150" r="17"/></svg></div></div><div class="uc-body"><span class="uc-tag">Multi-Agenten</span><h3>Ein Agent lernt, die ganze Flotte weiß Bescheid</h3><p>Teilen Sie ein Gedächtnis über viele Agenten mit Konsens-Voting und Drift-Erkennung, statt dass jeder Agent dieselben Lektionen neu lernt.</p></div></div>
+<div class="uc"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<g class="viz-grid"><line x1="40" y1="60" x2="370" y2="60"/><line x1="40" y1="110" x2="370" y2="110"/><line x1="40" y1="160" x2="370" y2="160"/><line x1="40" y1="210" x2="370" y2="210"/><line x1="40" y1="250" x2="370" y2="250"/></g>
+<path class="viz-area-bad" d="M40,244 C170,240 250,150 370,55 L370,250 Z"/>
+<path class="viz-line-bad cc-line" d="M40,244 C170,240 250,150 370,55" fill="none"/>
+<line class="viz-line-good" x1="40" y1="244" x2="370" y2="243"/>
+<circle class="viz-runner" r="5"><animateMotion dur="3s" repeatCount="indefinite" path="M40,244 C170,240 250,150 370,55"/></circle>
+<circle class="viz-dot-good" cx="370" cy="243" r="5"/>
+<text class="viz-label" x="200" y="120" text-anchor="middle">O(1) vs O(n)</text></svg></div></div><div class="uc-body"><span class="uc-tag">Hohes Volumen</span><h3>Flache Kosten bei Millionen Gesprächen</h3><p>Bei Millionen von Chats entscheidet der Pro-Turn-Speicherpreis über Ihre Marge. Mit Semvec wächst er nie, Turn 10 kostet so viel wie Turn 10.000.</p></div></div>
+<div class="uc rev"><div class="uc-img"><div class="vizwrap"><svg class="viz" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<path class="vault-shield" d="M200,42 L318,82 V160 C318,224 264,253 200,272 C136,253 82,224 82,160 V82 Z" fill="none"/>
+<path class="vault-pulse" d="M200,42 L318,82 V160 C318,224 264,253 200,272 C136,253 82,224 82,160 V82 Z" fill="none"/>
+<g class="vault-cells" transform="translate(150,108)"><rect class="vc" x="0" y="0" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="22" y="0" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="44" y="0" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="66" y="0" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="88" y="0" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="0" y="22" width="16" height="16" rx="2" style="animation-delay:0.18s"/><rect class="vc" x="22" y="22" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="44" y="22" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="66" y="22" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="88" y="22" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="0" y="44" width="16" height="16" rx="2" style="animation-delay:0.36s"/><rect class="vc" x="22" y="44" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="44" y="44" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="66" y="44" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="88" y="44" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="0" y="66" width="16" height="16" rx="2" style="animation-delay:0.54s"/><rect class="vc" x="22" y="66" width="16" height="16" rx="2" style="animation-delay:0.72s"/><rect class="vc" x="44" y="66" width="16" height="16" rx="2" style="animation-delay:0.90s"/><rect class="vc" x="66" y="66" width="16" height="16" rx="2" style="animation-delay:0.00s"/><rect class="vc" x="88" y="66" width="16" height="16" rx="2" style="animation-delay:0.18s"/></g>
+<rect class="vault-lock" x="184" y="150" width="32" height="24" rx="5"/>
+<path class="vault-arc" d="M190,150 v-8 a10,10 0 0 1 20,0 v8" fill="none"/></svg></div></div><div class="uc-body"><span class="uc-tag">Reguliert & EU</span><h3>Ihre Daten verlassen nie Ihre Server</h3><p>Läuft in Ihren eigenen Systemen, ohne Telemetrie. DSGVO-Artikel-17-Löschung mit signierten Zertifikaten und Audit-Logs. Entwickelt in München.</p></div></div>
+</div></section><section class="section" id="industries"><div class="wrap"><div class="section-head"><p class="eyebrow">BRANCHEN</p><h2>Für echte Branchen gebaut</h2></div>
+<div class="grid4">
+<a class="lcard icononly" href="industry-fintech.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div><div class="lcard-in"><h3>Finanzdienstleister</h3><p>Exakte Zahlen, prüfbar, Daten bleiben im Haus.</p><span class="more">Zur Fallstudie →</span></div></a>
+<a class="lcard icononly" href="industry-saas-dev.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><div class="lcard-in"><h3>SaaS & Dev-Tools</h3><p>Agenten-Flotten, Dev-Copiloten, reproduzierbare Läufe.</p><span class="more">Zur Fallstudie →</span></div></a>
+<a class="lcard icononly" href="industry-cx-support.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5"/><path d="M16 6a3 3 0 0 1 0 6M22 20c0-2.4-1.6-4.3-4-4.8"/></svg></div><div class="lcard-in"><h3>Kundensupport</h3><p>Jeden Kunden erinnern, bei riesigem Volumen.</p><span class="more">Zur Fallstudie →</span></div></a>
+<a class="lcard icononly" href="industry-healthcare.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="lcard-in"><h3>Gesundheit & Public</h3><p>Datenschutzkritisch, on-prem, voll prüfbar.</p><span class="more">Zur Fallstudie →</span></div></a>
+</div></div></section><section class="section dark"><div class="wrap"><div class="section-head"><p class="eyebrow">VERGLEICH</p><h2>Gleicher Job. Andere Cost-Class.</h2><p>Eine Drop-in-Alternative zu mem0 und Letta, direkt gegenübergestellt.</p></div>
+<div class="cmp"><table><thead><tr><th></th><th>mem0</th><th class="sv">Semvec</th></tr></thead><tbody>
+<tr><td class="feat">Extra KI-Calls fürs Speichern</td><td>Dutzende pro Turn</td><td class="sv">0</td></tr>
+<tr><td class="feat">Kosten bei längerem Chat</td><td>steigt weiter</td><td class="sv">bleibt flach, O(1)</td></tr>
+<tr><td class="feat">Tokens, die Sie zahlen</td><td>Basiswert</td><td class="sv">~93 % weniger</td></tr>
+<tr><td class="feat">Reproduzierbar für Audits</td><td>nein</td><td class="sv">ja, bit-genauer Replay</td></tr>
+<tr><td class="feat">Wo Ihre Daten liegen</td><td>über externe KI</td><td class="sv">Ihre eigenen Server</td></tr>
+</tbody></table></div></div></section><section class="section"><div class="wrap"><div class="section-head"><p class="eyebrow">TECHNIK & VERTRAUEN</p><h2>Für Produktion und Audits gebaut</h2></div><div class="cards">
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 4v4h4"/></svg></div><h3>Reproduzierbar</h3><p>Jedes Gespräch bit-genau aus einer Datei wiedergeben, für Audits, CI und Debugging.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Datenschutz by Design</h3><p>Läuft in Ihren Systemen, sendet keine Telemetrie, prüft die Lizenz lokal. Ihre Daten bleiben bei Ihnen.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></div><h3>DSGVO-Artikel 17</h3><p>Nachgewiesene Löschung mit signierten Zertifikaten und manipulationssicheren Audit-Logs.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg></div><h3>Schnell & leicht</h3><p>Rust-Kern, Python-API, sub-millisekündige Updates auf normaler CPU. pip install semvec.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/></svg></div><h3>Passt zu Ihren Tools</h3><p>Integrierter MCP-Server für Claude Code und Cursor, lädt und speichert Kontext automatisch.</p></div>
+<div class="card"><div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div><h3>Made in Munich</h3><p>Versino PsiOmega GmbH. Europäische Patentanmeldung 25 188 105.8.</p></div>
+</div></div></section><section class="section tint" id="pricing"><div class="wrap"><div class="section-head"><p class="eyebrow">PREISE</p><h2>Kostenlos starten. Skalieren, wenn bereit.</h2></div>
+<div class="pricing">
+<div class="price-card"><div class="price-name">Community</div><div class="price-amt">Kostenlos</div><ul class="price-list"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>5 QPS / 50 burst</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Keine Registrierung</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Linux, macOS, Windows</li></ul><a class="btn btn-outline" href="https://pypi.org/project/semvec/" target="_blank" rel="noopener">pip install semvec</a></div>
+<div class="price-card feat" data-badge="Beliebt"><div class="price-name">Pro</div><div class="price-amt">Auf Anfrage</div><ul class="price-list"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Höhere Rate-Limits</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Erweiterte Retrieval-Modi</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Lokale Lizenz</li></ul><a class="btn btn-primary" href="#contact">Kontakt aufnehmen</a></div>
+<div class="price-card"><div class="price-name">Enterprise</div><div class="price-amt">Auf Anfrage</div><ul class="price-list"><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Erweiterte Rate-Limits</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Alle Retrieval-Modi</li><li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>Priorisierter Support</li></ul><a class="btn btn-outline" href="#contact">Kontakt aufnehmen</a></div>
+</div><p class="price-note">Preise über vertrieb@versino.de. Lizenzen lokal verifiziert, kein Phone-Home.</p></div></section><section class="section" id="faq"><div class="wrap"><div class="section-head"><p class="eyebrow">FAQ</p><h2>Fragen vor dem Start</h2><p>Was Teams uns am häufigsten fragen, bevor sie wechseln. Noch unsicher? Wir führen Sie gern durch.</p></div><div class="faq">
+<div class="faq-item"><h3>Wie aufwendig ist der Wechsel von mem0 oder Letta?</h3><p>Einfach. Semvec ist eine Drop-in-Lösung mit einer simplen Python-API (add / search) und einer Ein-Zeilen-Installation. Die meisten Teams tauschen ihre Memory-Calls an einem Nachmittag, und wir begleiten Sie dabei.</p></div>
+<div class="faq-item"><h3>Verliere ich Gedächtnis-Qualität, um Geld zu sparen?</h3><p>Keine nennenswerte Einbuße. Semvec liegt im LOCOMO-Benchmark vergleichbar zu mem0 (0,597 vs 0,669), bei ~93 % weniger Tokens und ~8× schnellerem Replay. Sie behalten die Erinnerung, die Rechnung fällt weg.</p></div>
+<div class="faq-item"><h3>Wie schnell sehe ich die Ersparnis?</h3><p>Ab dem allerersten Turn, Ihre App sendet die ganze Historie nicht mehr erneut. Schätzen Sie Ihre monatliche Ersparnis mit dem Rechner oben, dann pip install semvec und heute kostenlos starten.</p></div>
+<div class="faq-item"><h3>Sind meine Kundendaten sicher?</h3><p>Ja. Semvec läuft in-process auf Ihren eigenen Servern, sendet keine Telemetrie und prüft die Lizenz lokal, Gesprächsinhalte verlassen Ihre Maschinen nie. Das hält DSGVO- und Beschaffungsprüfungen kurz.</p></div>
+<div class="faq-item"><h3>Was brauche ich für den Betrieb?</h3><p>Nur pip install semvec. Der Rust-Kern ist im Python-Paket enthalten und läuft auf normaler CPU, keine GPU, kein separater Dienst. Wheels für Linux, macOS und Windows. Per integriertem MCP-Server auch in Claude Code und Cursor.</p></div>
+<div class="faq-item"><h3>Was kostet es?</h3><p>Kostenlos starten in der Community-Stufe, ohne Registrierung. Pro und Enterprise bieten höhere Rate-Limits, erweitertes Retrieval und Support; Preise auf Anfrage über vertrieb@versino.de. Keine überraschenden Nutzungsgebühren: Lizenzen werden lokal verifiziert.</p></div>
+</div>
+<div class="center" style="margin-top:34px"><p style="margin-bottom:16px;font-size:1.02rem">Noch eine Frage offen?</p><a class="btn btn-primary" href="#contact">Mit uns sprechen</a> <a class="btn btn-outline" href="#calculator">Ersparnis schätzen</a></div>
+</div></section><section class="section contact" id="contact"><div class="wrap"><div class="contact-grid">
+<div class="contact-copy">
+<p class="eyebrow">LOSLEGEN</p>
+<h2>Semvec mit Ihren Zahlen sehen</h2>
+<p class="lead">Sagen Sie uns Ihren Use Case und Ihr Volumen. Wir melden uns, meist innerhalb eines Werktags, mit einer maßgeschneiderten Token-Ersparnis-Schätzung und einem klaren Weg in die Produktion.</p>
+<ul class="flist contact-list">
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Eine Ersparnis-Schätzung für Ihr echtes Volumen</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Ein 30-minütiger technischer Walkthrough</span></li>
+<li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span><span>Läuft auf Ihrer eigenen Infrastruktur, DSGVO-fähig</span></li>
+</ul>
+<p class="contact-alt">Lieber E-Mail? <a href="mailto:vertrieb@versino.de">vertrieb@versino.de</a></p>
+</div>
+<form class="contact-form" onsubmit="return semvecSubmit(this)">
+<div class="cf-row"><label>Name<input name="name" required></label><label>Geschäftliche E-Mail<input type="email" name="email" required></label></div>
+<label>Unternehmen<input name="company"></label>
+<div class="cf-row"><label>Anwendungsfall<select name="usecase"><option>Support-Copilot</option><option>Autonome Agenten</option><option>Hochvolumiger Chat</option><option>Reguliert / On-Prem</option><option>Andere</option></select></label>
+<label>Gespräche / Monat<select name="volume"><option>unter 10k</option><option>10k to 100k</option><option>100k to 1M</option><option>1M+</option></select></label></div>
+<label>Was bauen Sie?<textarea name="message" rows="3"></textarea></label>
+<label class="cf-consent"><input type="checkbox" required> Ich bin einverstanden, zu Semvec kontaktiert zu werden.</label>
+<button class="btn btn-primary" type="submit">Ersparnis-Schätzung anfordern →</button>
+<p class="cf-ok" hidden>Vielen Dank. Wir melden uns innerhalb eines Werktags.</p>
+</form>
+</div></div></section><section class="cta-band"><div class="wrap">
+<h2>In 60 Sekunden ausprobieren</h2>
+<p>Kostenlose Community-Stufe. Keine Registrierung. Wheels für Linux, macOS und Windows.</p>
+<div class="cta-row"><span class="pip"><span class="d">$</span>pip install semvec</span>
+<a class="btn btn-light" href="#contact">Mit uns sprechen</a>
+<a class="btn btn-ghost" href="https://www.semvec.io/" target="_blank" rel="noopener">Dokumentation lesen</a></div>
+</div></section><footer class="footer"><div class="wrap">
+<div class="foot-grid">
+<div><div class="foot-brand">Semvec</div><p style="color:rgba(255,255,255,.55);max-width:260px">Konstantkosten-Speicher für LLM-Agenten. Von der Versino PsiOmega GmbH, München.</p></div>
+<div><h4>Funktionen</h4>
+<a href="cap-token-savings.html">Token- & Kostenersparnis</a>
+<a href="cap-memory-structure.html">Speicher-Struktur</a>
+<a href="cap-language-understanding.html">Sprachverständnis</a>
+<a href="cap-tone-analysis.html">Tonalitätsanalyse</a></div>
+<div><h4>Branchen</h4>
+<a href="industry-fintech.html">Finanzdienstleister</a>
+<a href="industry-saas-dev.html">SaaS & Dev-Tools</a>
+<a href="industry-cx-support.html">Kundensupport</a>
+<a href="industry-healthcare.html">Gesundheit & Public</a></div>
+<div><h4>Lösungen</h4>
+<a href="challenge-cut-costs.html">Speicherkosten senken</a>
+<a href="challenge-auditable-agents.html">Prüfbare Agenten</a>
+<a href="challenge-eu-data.html">Daten in der EU</a>
+<a href="https://www.semvec.io/">Dokumentation</a></div>
+</div>
+<div class="foot-bot">Versino PsiOmega GmbH · Nymphenburger Str. 4, 80335 München · +49 8671 96209-00 · <a href="mailto:vertrieb@versino.de" style="color:rgba(255,255,255,.8)">vertrieb@versino.de</a></div>
+</div></footer></div>
+<script>
+document.documentElement.classList.add('js');
+var semvecIO=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');semvecIO.unobserve(e.target)}})},{rootMargin:'0px 0px -8% 0px'});
+function semvecArm(){var r=document.querySelector('[data-langroot][style*="block"]');if(r){r.querySelectorAll('.section:not(.in)').forEach(function(s){semvecIO.observe(s)})}}
+function semvecSetLang(l){document.querySelectorAll('[data-langroot]').forEach(function(e){e.style.display=(e.getAttribute('data-langroot')===l)?'block':'none';});try{localStorage.setItem('semvec_lang',l)}catch(_){}semvecArm()}
+function fmt(n,loc){return Math.round(n).toLocaleString(loc)}
+function semvecSubmit(f){f.querySelectorAll('input,select,textarea,button').forEach(function(el){el.disabled=true});var ok=f.querySelector('.cf-ok');if(ok)ok.hidden=false;return false}
+function semvecToggleMenu(b){var n=b.closest('.nav');if(n)n.classList.toggle('open')}
+function semvecCalc(box){
+  var root=box.closest('[data-langroot]');
+  var loc=(root&&root.getAttribute('data-langroot')==='de')?'de-DE':'en-US';
+  var n=+box.querySelector('.c-n').value||0,t=+box.querySelector('.c-t').value||0,c=+box.querySelector('.c-c').value||0,p=+box.querySelector('.c-p').value||0;
+  var before=n*t*c, after=before*0.07, savedTok=before-after, month=savedTok/1e6*p, year=month*12;
+  box.querySelector('.c-before').textContent=fmt(before,loc);
+  box.querySelector('.c-after').textContent=fmt(after,loc);
+  box.querySelector('.c-month').textContent='€'+fmt(month,loc);
+  box.querySelector('.c-year').textContent='€'+fmt(year,loc);
+}
+document.querySelectorAll('.calc').forEach(function(box){box.addEventListener('input',function(){semvecCalc(box)});semvecCalc(box)});
+semvecSetLang((function(){try{return localStorage.getItem('semvec_lang')}catch(_){return null}}())||'en');
+</script>
+</body>
+</html>
